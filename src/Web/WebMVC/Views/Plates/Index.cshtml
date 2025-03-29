@@ -1,0 +1,30 @@
+@model IEnumerable<RTCodingExercise.Microservices.Models.Plate>
+
+<h2>Available Plates</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Plate</th>
+            <th>Purchase Price</th>
+            <th>Sale Price</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var plate in Model)
+    {
+        <tr>
+            <td>@plate.PlateNumber</td>
+            <td>@plate.PurchasePrice</td>
+            <td>@plate.SalePrice</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<form asp-action="AddPlate" method="post">
+    <label>Plate Number:</label>
+    <input type="text" name="PlateNumber" />
+    <label>Purchase Price:</label>
+    <input type="number" name="PurchasePrice" />
+    <button type="submit">Add Plate</button>
+</form>
