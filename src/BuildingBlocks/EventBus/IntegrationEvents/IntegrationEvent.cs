@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace IntegrationEvents
+namespace RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents
 {
     public class IntegrationEvent
     {

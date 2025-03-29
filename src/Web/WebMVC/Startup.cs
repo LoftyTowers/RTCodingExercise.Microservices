@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using RabbitMQ.Client;
+using RTCodingExercise.Microservices.WebMVC.Services;
 
 namespace RTCodingExercise.WebMVC
 {
@@ -14,7 +15,16 @@ namespace RTCodingExercise.WebMVC
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
+        {                    
+            services.AddAutoMapper(cfg =>
+            {
+                cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies());
+            });
+
+            // Register the PlateQueryService
+            services.AddScoped<IPlateQueryService, PlateQueryService>();
+            services.AddScoped<IPlateCommandService, PlateCommandService>();
+
             services.AddControllers();
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages().AddRazorRuntimeCompilation();
