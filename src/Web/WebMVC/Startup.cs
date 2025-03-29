@@ -1,6 +1,8 @@
 ﻿using MassTransit;
 using RabbitMQ.Client;
 using RTCodingExercise.Microservices.WebMVC.Services;
+using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents;
+
 
 namespace RTCodingExercise.WebMVC
 {
@@ -31,8 +33,9 @@ namespace RTCodingExercise.WebMVC
 
             services.AddMassTransit(x =>
             {
-                //x.AddConsumer<ConsumerClass>();
-
+                // Register the request client for GetPlatesEvent
+                x.AddRequestClient<GetPlatesEvent>();
+                
                 //ADD CONSUMERS HERE
                 x.UsingRabbitMq((context, cfg) =>
                 {

@@ -1,6 +1,8 @@
 ﻿using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
+using Catalog.API.Repositories;
+using Catalog.API.Consumers;
 
 namespace Catalog.API
 {
@@ -25,6 +27,9 @@ namespace Catalog.API
                         //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
+
+            // Register Plate Repository
+            services.AddScoped<IPlateRepository, PlateRepository>();
 
             services.AddSwaggerGen(options =>
             {
@@ -53,6 +58,8 @@ namespace Catalog.API
             services.AddMassTransit(x =>
             {
                 //x.AddConsumer<ConsumerClass>();
+                x.AddConsumer<GetPlatesConsumer>();
+                x.AddConsumer<PlateAddedConsumer>();
 
                 //ADD CONSUMERS HERE
                 x.UsingRabbitMq((context, cfg) =>
