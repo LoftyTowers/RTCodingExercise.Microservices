@@ -2,17 +2,6 @@
 
 <h2 class="mt-4 mb-3">Available Plates</h2>
 
-<form method="get" asp-action="Index" class="mb-3 d-flex align-items-end">
-    <label for="pageSize" class="me-2">Show:</label>
-    <select id="pageSize" name="pageSize" class="form-select w-auto me-3" onchange="this.form.submit()">
-        <option value="20" @(ViewBag.PageSize == 20 ? "selected" : "")>20</option>
-        <option value="50" @(ViewBag.PageSize == 50 ? "selected" : "")>50</option>
-        <option value="100" @(ViewBag.PageSize == 100 ? "selected" : "")>100</option>
-    </select>
-    <input type="hidden" name="page" value="1" />
-</form>
-
-
 <table class="table table-striped table-bordered w-auto">
     <thead class="thead-dark">
         <tr>
@@ -34,9 +23,9 @@
 </table>
 <!-- Pagination Controls -->
 @{
-    int currentPage = ViewBag.CurrentPage;
-    int totalPages = ViewBag.TotalPages;
-    int pageSize = ViewBag.PageSize;
+    int currentPage = ViewBag.CurrentPage is int cp ? cp : 1;
+    int totalPages = ViewBag.TotalPages is int tp ? tp : 1;
+    int pageSize = ViewBag.PageSize is int size ? size : 20;
 
     int startPage = Math.Max(1, currentPage - 2);
     int endPage = Math.Min(totalPages, startPage + 4);
