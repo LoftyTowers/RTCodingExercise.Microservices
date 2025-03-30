@@ -58,7 +58,7 @@ namespace RTCodingExercise.Microservices.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while fetching plates.");
-                return StatusCode(500, "Internal server error");
+                return RedirectToAction("Error", "Home");
             }
         }
 
@@ -88,7 +88,7 @@ namespace RTCodingExercise.Microservices.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while adding plate.");
-                return StatusCode(500, "Internal server error");
+                return RedirectToAction("Error", "Home");
             }
         }
     }
