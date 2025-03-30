@@ -41,12 +41,16 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             try
             {
                 _logger.LogInformation("Requesting plates from the event bus.");
-                var response = await _client.GetResponse<PlatesRetrievedEvent>(new GetPlatesEvent());
+
+                var response = await _client.GetResponse<PlatesRetrievedEvent>(new GetPlatesEvent
+                {
+                    CorrelationId = Guid.NewGuid()
+                });
                 return MapPlates(response);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while retrieving plates.");
+                _logger.LogError(ex, "Unhandled exception while retrieving plates.");
                 throw;
             }
         }

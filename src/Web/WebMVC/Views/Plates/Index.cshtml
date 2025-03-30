@@ -10,7 +10,22 @@
     int endPage = Math.Min(totalPages, startPage + 4);
     if (endPage - startPage < 4) startPage = Math.Max(1, endPage - 4);
 }
-
+<h3 class="mt-5 mb-3">Add Plate</h3>
+<hr>
+<form asp-action="AddPlate" method="post" class="row g-3 align-items-end">
+    <div class="col-md-4">
+        <label class="form-label" for="plateInput">Plate Number:</label>
+        <input id="plateInput" type="text" name="Registration" class="form-control" required />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label" for="priceInput">Purchase Price (£):</label>
+        <input id="priceInput" type="number" name="PurchasePrice" class="form-control" step="0.01" required />
+    </div>
+    <div class="col-md-4">
+        <button type="submit" class="btn btn-primary">Add Plate</button>
+    </div>
+</form>
+<hr>
 <h2 class="mt-4 mb-3">Available Plates</h2>
 
 <table class="table table-striped table-bordered w-auto">
@@ -72,21 +87,4 @@
 
     </ul>
 </nav>
-
-<hr>
-<h3 class="mt-5 mb-3">Add Plate</h3>
-<hr>
-<form asp-action="AddPlate" method="post" class="row g-3 align-items-end">
-    <div class="col-md-4">
-        <label class="form-label" for="plateInput">Plate Number:</label>
-        <input id="plateInput" type="text" name="Registration" class="form-control" required />
-    </div>
-    <div class="col-md-4">
-        <label class="form-label" for="priceInput">Purchase Price (£):</label>
-        <input id="priceInput" type="number" name="PurchasePrice" class="form-control" step="0.01" required />
-    </div>
-    <div class="col-md-4">
-        <button type="submit" class="btn btn-primary">Add Plate</button>
-    </div>
-</form>
 

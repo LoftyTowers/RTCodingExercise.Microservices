@@ -23,15 +23,33 @@ namespace Catalog.API.Consumers
 
         public async Task Consume(ConsumeContext<GetPlatesEvent> context)
         {
-            _logger.LogInformation("Received GetPlatesEvent");
+            try
+            {
+                _logger.LogInformation("Received GetPlatesEvent with CorrelationId {CorrelationId}", context.CorrelationId);
 
-            var plates = await _plateRepository.GetAllPlatesAsync();
-            var plateDtos = _mapper.Map<List<PlateDto>>(plates);
+                var plates = await _plateRepository.GetAllPlatesAsync();
 
-            var response = new PlatesRetrievedEvent(plateDtos);
+                if (plates == null || !plates.Any())
+                {
+                    _logger.LogWarning("No plates found in the repository.");
+                    // You might want to respond with an empty list anyway, or throw depending on your use case
+                }
 
-            _logger.LogInformation("Returning plate data in response");
-            await context.RespondAsync(response);
+                var plateDtos = _mapper.Map<List<PlateDto>>(plates);
+
+                var response = new PlatesRetrievedEvent(plateDtos)
+                {
+                    CorrelationId = context.CorrelationId ?? Guid.NewGuid()
+                };
+
+                _logger.LogInformation("Returning plate data with CorrelationId {CorrelationId}", response.CorrelationId);
+                await context.RespondAsync(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception while processing GetPlatesEvent.");
+                await context.RespondAsync<Fault<GetPlatesEvent>>(ex);
+            }
         }
     }
 }

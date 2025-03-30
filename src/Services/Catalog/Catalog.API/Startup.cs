@@ -1,8 +1,9 @@
-﻿using MassTransit;
+using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using Catalog.API.Repositories;
 using Catalog.API.Consumers;
+using Catalog.API.Services;
 
 namespace Catalog.API
 {
@@ -35,6 +36,8 @@ namespace Catalog.API
 
             // Register Plate Repository
             services.AddScoped<IPlateRepository, PlateRepository>();
+            services.AddScoped<IPlateService, PlateService>();
+
 
             services.AddSwaggerGen(options =>
             {

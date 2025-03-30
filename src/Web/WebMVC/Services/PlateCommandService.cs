@@ -25,8 +25,12 @@ public class PlateCommandService : IPlateCommandService
             if (string.IsNullOrWhiteSpace(plate.Registration))
                 throw new ArgumentException("Plate registration cannot be null or empty.", nameof(plate.Registration));
 
-            var eventMessage = _mapper.Map<PlateDto>(plate);
-            _logger.LogInformation("Publishing PlateAddedEvent for registration {Registration}", plate.Registration);
+            var plateDto = _mapper.Map<PlateDto>(plate);
+            var eventMessage = new PlateAddedEvent
+            {
+                Plate = plateDto,
+                CorrelationId = Guid.NewGuid()
+            };
             await _publishEndpoint.Publish(eventMessage);
         }
         catch (RequestTimeoutException ex)
