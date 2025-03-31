@@ -34,9 +34,16 @@ namespace Catalog.API
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            // Register Plate Repository
+            // Register Repositories
             services.AddScoped<IPlateRepository, PlateRepository>();
+            services.AddScoped<IAuditRepository, AuditRepository>();
+
+            // Register Services
             services.AddScoped<IPlateService, PlateService>();
+            services.AddScoped<IReservationService, ReservationService>();
+            services.AddScoped<ISalesService, SalesService>();
+            services.AddScoped<IPromotionService, PromotionService>();
+
 
 
             services.AddSwaggerGen(options =>
@@ -66,8 +73,12 @@ namespace Catalog.API
             services.AddMassTransit(x =>
             {
                 //x.AddConsumer<ConsumerClass>();
-                x.AddConsumer<GetPlatesConsumer>();
-                x.AddConsumer<PlateAddedConsumer>();
+                x.AddConsumer<PlateReservedConsumer>();
+                x.AddConsumer<PlateUnreservedConsumer>();
+                x.AddConsumer<PlateSoldConsumer>();
+                x.AddConsumer<ApplyDiscountConsumer>();
+                x.AddConsumer<ApplyPercentOffConsumer>();
+                x.AddConsumer<GetProfitStatsConsumer>();
 
                 //ADD CONSUMERS HERE
                 x.UsingRabbitMq((context, cfg) =>

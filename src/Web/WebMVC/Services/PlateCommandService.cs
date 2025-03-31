@@ -46,5 +46,59 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
                 throw new ApplicationException("An error occurred while processing your request.");
             }
         }
+
+        public async Task ReservePlateAsync(PlateViewModel plate)
+        {
+            try
+            {
+                if (plate == null) throw new ArgumentNullException(nameof(plate));
+                if (string.IsNullOrWhiteSpace(plate.Registration))
+                    throw new ArgumentException("Plate registration cannot be null or empty.", nameof(plate.Registration));
+
+                var plateDto = _mapper.Map<PlateDto>(plate);
+                var eventMessage = new PlateUnreservedEvent(plateDto)
+                {
+                    CorrelationId = Guid.NewGuid()
+                };
+                await _publishEndpoint.Publish(eventMessage);
+            }
+            catch (RequestTimeoutException ex)
+            {
+                _logger.LogError(ex, "Timeout occurred while sending PlateReservedEvent.");
+                throw new ApplicationException("The catalog service did not respond in time.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send PlateReservedEvent.");
+                throw new ApplicationException("An error occurred while processing your request.");
+            }
+        }
+
+        public async Task UnreservePlateAsync(PlateViewModel plate)
+        {
+            try
+            {
+                if (plate == null) throw new ArgumentNullException(nameof(plate));
+                if (string.IsNullOrWhiteSpace(plate.Registration))
+                    throw new ArgumentException("Plate registration cannot be null or empty.", nameof(plate.Registration));
+
+                var plateDto = _mapper.Map<PlateDto>(plate);
+                var eventMessage = new PlateUnreservedEvent(plateDto)
+                {
+                    CorrelationId = Guid.NewGuid()
+                };
+                await _publishEndpoint.Publish(eventMessage);
+            }
+            catch (RequestTimeoutException ex)
+            {
+                _logger.LogError(ex, "Timeout occurred while sending PlateUnreservedEvent.");
+                throw new ApplicationException("The catalog service did not respond in time.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send PlateUnreservedEvent.");
+                throw new ApplicationException("An error occurred while processing your request.");
+            }
+        }
     }
 }

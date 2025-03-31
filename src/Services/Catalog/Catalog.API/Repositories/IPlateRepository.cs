@@ -12,5 +12,9 @@ namespace Catalog.API.Repositories
         Task<Plate> AddPlateAsync(Plate plate);
         Task<bool> UpdatePlateAsync(Plate plate);
         Task<bool> DeletePlateAsync(Guid id);
+        Task<ProfitStats> CalculateProfitStatsAsync();
+        Task UpdateStatusAsync(Guid plateId, string status);
+        Task ApplyFlatDiscountAsync(decimal discountAmount);
+        Task ApplyPercentDiscountAsync(decimal discountPercentage);
     }
 }

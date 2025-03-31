@@ -25,12 +25,12 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             {
                 if (plate == null) throw new ArgumentNullException(nameof(plate));
                 if (string.IsNullOrWhiteSpace(plate.Id.ToString()))
-                    throw new ArgumentException("Reservation plate ID cannot be null or empty.", nameof(reservation.Id));
+                    throw new ArgumentException("Reservation plate ID cannot be null or empty.", nameof(plate.Id));
 
                 var reservationDto = _mapper.Map<PlateDto>(plate);
-                var eventMessage = new ReservationAddedEvent
+                var eventMessage = new PlateReservedEvent(reservationDto)
                 {
-                    Reservation = reservationDto,
+                    Plate = reservationDto,
                     CorrelationId = Guid.NewGuid()
                 };
                 await _publishEndpoint.Publish(eventMessage);
@@ -55,9 +55,9 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
                 if (string.IsNullOrWhiteSpace(plate.Id.ToString()))
                     throw new ArgumentException("Unreservation plate ID cannot be null or empty.", nameof(plate.Id));
 
-                var eventMessage = new ReservationRemovedEvent
+                var reservationDto = _mapper.Map<PlateDto>(plate);
+                var eventMessage = new PlateUnreservedEvent(reservationDto)
                 {
-                    ReservationId = plate.Id,
                     CorrelationId = Guid.NewGuid()
                 };
                 await _publishEndpoint.Publish(eventMessage);

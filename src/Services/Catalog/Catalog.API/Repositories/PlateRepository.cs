@@ -1,6 +1,3 @@
-using Catalog.Domain;
-using Catalog.API.Data;
-
 namespace Catalog.API.Repositories
 {
     public class PlateRepository : IPlateRepository
@@ -59,6 +56,49 @@ namespace Catalog.API.Repositories
 
             _context.Plates.Remove(plate);
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<ProfitStats> CalculateProfitStatsAsync()
+        {
+            var soldPlates = await _context.Plates.CountAsync(p => p.Status == "Sold");
+            var totalPlates = await _context.Plates.CountAsync();
+
+            return new ProfitStats
+            {
+                // TotalRevenue = soldPlates * 100, 
+                // AverageProfitMargin = totalPlates > 0 ? (decimal)soldPlates / totalPlates : 0
+            };
+        }
+
+        public async Task UpdateStatusAsync(Guid plateId, string status)
+        {
+            var plate = await GetPlateByIdAsync(plateId);
+            if (plate == null) throw new ArgumentNullException(nameof(plate));
+
+            plate.Status = status;
+            await UpdatePlateAsync(plate);
+        }
+
+        public async Task ApplyFlatDiscountAsync(decimal discountAmount)
+        {
+            var plates = await _context.Plates.ToListAsync();
+            foreach (var plate in plates)
+            {
+                plate.SalePrice -= discountAmount;
+                _context.Plates.Update(plate);
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task ApplyPercentDiscountAsync(decimal discountPercentage)
+        {
+            var plates = await _context.Plates.ToListAsync();
+            foreach (var plate in plates)
+            {
+                plate.SalePrice -= plate.SalePrice * discountPercentage;
+                _context.Plates.Update(plate);
+            }
+            await _context.SaveChangesAsync();
         }
     }
 }

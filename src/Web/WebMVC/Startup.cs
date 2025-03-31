@@ -32,6 +32,10 @@ namespace RTCodingExercise.WebMVC
             // Register the PlateQueryService
             services.AddScoped<IPlateQueryService, PlateQueryService>();
             services.AddScoped<IPlateCommandService, PlateCommandService>();
+            services.AddScoped<IReservationCommandService, ReservationCommandService>();
+            services.AddScoped<ISalesCommandService, SalesCommandService>();
+            services.AddScoped<IPromotionCommandService, PromotionCommandService>();
+
 
             services.AddControllers();
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
@@ -69,14 +73,14 @@ namespace RTCodingExercise.WebMVC
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            if (env.IsDevelopment())
-            {
+            // if (env.IsDevelopment())
+            // {
                 app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+            // }
+            // else
+            // {
+            //     app.UseExceptionHandler("/Home/Error");
+            // }
 
             var pathBase = Configuration["PATH_BASE"];
             if (!string.IsNullOrEmpty(pathBase))

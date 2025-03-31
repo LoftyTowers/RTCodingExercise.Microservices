@@ -9,6 +9,7 @@ namespace RTCodingExercise.Microservices.WebMVC.Mapping
         public PlateProfile()
         {
             CreateMap<PlateDto, PlateViewModel>().ReverseMap();
+            CreateMap<ProfitStatsDto, ProfitStatsViewModel>().ReverseMap();
         }
     }
 }

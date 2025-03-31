@@ -1,8 +1,6 @@
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.Models;
-using Catalog.Domain;
 using Catalog.API.Repositories;
 using AutoMapper;
 

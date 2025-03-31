@@ -1,5 +1,4 @@
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using Catalog.API.Services;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents;
 

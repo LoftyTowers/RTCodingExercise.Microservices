@@ -19,18 +19,17 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             _logger = logger;
         }
 
-        public async Task SellPlateAsync(PlateViewModel Plate)
+        public async Task SellPlateAsync(PlateViewModel plate)
         {
             try
             {
-                if (sale == null) throw new ArgumentNullException(nameof(sale));
-                if (string.IsNullOrWhiteSpace(sale.PlateId.ToString()))
-                    throw new ArgumentException("Sale plate ID cannot be null or empty.", nameof(sale.PlateId));
+                if (plate == null) throw new ArgumentNullException(nameof(plate));
+                if (string.IsNullOrWhiteSpace(plate.Id.ToString()))
+                    throw new ArgumentException("Sale plate ID cannot be null or empty.", nameof(plate.Id));
 
-                var saleDto = _mapper.Map<SaleDto>(sale);
-                var eventMessage = new SaleAddedEvent
+                var plateDto = _mapper.Map<PlateDto>(plate);
+                var eventMessage = new PlateSoldEvent(plateDto)
                 {
-                    Sale = saleDto,
                     CorrelationId = Guid.NewGuid()
                 };
                 await _publishEndpoint.Publish(eventMessage);

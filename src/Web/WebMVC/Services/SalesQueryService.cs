@@ -10,30 +10,29 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
     {
         #region fields
 
-        private readonly IRequestClient<GetSalesEvent> _client;
+        private readonly IRequestClient<GetProfitStatsEvent> _client;
         private readonly IMapper _mapper;
         private readonly ILogger<SalesQueryService> _logger;
 
         #endregion
 
-        public SalesQueryService(IRequestClient<PlateViewModel> client, IMapper mapper, ILogger<SalesQueryService> logger)
+        public SalesQueryService(IRequestClient<GetProfitStatsEvent> client, IMapper mapper, ILogger<SalesQueryService> logger)
         {
             _client = client;
             _mapper = mapper;
             _logger = logger;
         }
 
-        private List<PlateViewModel> MapSales(Response<PlateViewModel> response)
+        private Task<ProfitStatsViewModel> MapSales(Response<ProfitStatsCalculatedEvent> response)
         {
-            if (response.Message.Sales == null || !response.Message.Sales.Any())
+            if (response.Message.Stats == null)
             {
-                _logger.LogWarning("No sales found in the response.");
-                return new List<PlateViewModel>();
+                _logger.LogWarning("No sales stats found in the response.");
+                return Task.FromResult<ProfitStatsViewModel>(null);
             }
 
-            var sales = _mapper.Map<List<PlateViewModel>>(response.Message.Sales);
-            _logger.LogInformation($"Mapped {sales.Count} sales successfully.");
-            return sales;
+            var viewModel = _mapper.Map<ProfitStatsViewModel>(response.Message.Stats);
+            return Task.FromResult(viewModel);
         }
 
         public async Task<ProfitStatsViewModel> GetProfitStatsAsync()
@@ -42,11 +41,11 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             {
                 _logger.LogInformation("Requesting sales from the event bus.");
 
-                var response = await _client.GetResponse<SalesRetrievedEvent>(new GetSalesEvent
+                var response = await _client.GetResponse<ProfitStatsCalculatedEvent>(new GetProfitStatsEvent
                 {
                     CorrelationId = Guid.NewGuid()
                 });
-                return MapSales(response);
+                return await MapSales(response);
             }
             catch (Exception ex)
             {

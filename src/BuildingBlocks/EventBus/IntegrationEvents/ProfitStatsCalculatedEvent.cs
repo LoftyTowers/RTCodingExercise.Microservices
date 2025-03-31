@@ -1,14 +1,15 @@
+using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.Models;
+
 namespace RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents
 {
     public class ProfitStatsCalculatedEvent : IntegrationEvent
     {
-        public decimal TotalRevenue { get; set; }
-        public decimal AverageProfitMargin { get; set; }
 
-        public ProfitStatsCalculatedEvent(decimal totalRevenue, decimal averageProfitMargin) : base()
+        public ProfitStatsDto Stats { get; set; }
+
+        public ProfitStatsCalculatedEvent(ProfitStatsDto stats) : base()
         {
-            TotalRevenue = totalRevenue;
-            AverageProfitMargin = averageProfitMargin;
+            Stats = stats;
         }
     }
 }
