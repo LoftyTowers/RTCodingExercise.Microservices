@@ -6,5 +6,6 @@ namespace RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEven
         public string Registration { get; set; }
         public decimal PurchasePrice { get; set; }
         public decimal SalePrice { get; set; }
+        public string Status { get; set; }
     }
 }
