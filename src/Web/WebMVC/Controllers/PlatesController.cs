@@ -1,5 +1,5 @@
 using RTCodingExercise.Microservices.WebMVC.Services;
- using RTCodingExercise.Microservices.Models;
+using RTCodingExercise.Microservices.Models;
 
 namespace RTCodingExercise.Microservices.Controllers
 {
@@ -20,21 +20,12 @@ namespace RTCodingExercise.Microservices.Controllers
             _logger = logger;
         }
 
-        // Populate some sample data for now
-        // private static List<PlateViewModel> plates = new List<PlateViewModel>
-        // {
-        //     new PlateViewModel { Registration = "ABC 123", PurchasePrice = 500, SalePrice = 600 },
-        //     new PlateViewModel { Registration = "XYZ 789", PurchasePrice = 700, SalePrice = 840 },
-        //     new PlateViewModel { Registration = "MNO 456", PurchasePrice = 400, SalePrice = 480 },
-        //     new PlateViewModel { Registration = "PET 125", PurchasePrice = 500, SalePrice = 600 }
-        // };
-
         public async Task<IActionResult> Index(int page = 1, int pageSize = 20)
         {
             try
             {
                 _logger.LogInformation("Sending request for plates via MassTransit.");
-                
+
                 // Send the MassTransit request to get plates
                 var allPlates = await _plateQueryService.GetPlatesAsync();
 
@@ -90,6 +81,32 @@ namespace RTCodingExercise.Microservices.Controllers
                 _logger.LogError(ex, "Error while adding plate.");
                 return RedirectToAction("Error", "Home");
             }
+        }
+
+        public async Task<IActionResult> OrderByPrice()
+        {
+            return View("Index");
+        }
+
+        public async Task<IActionResult> FilterByNumber(string number)
+        {
+            return View("Index");
+        }
+
+        public async Task<IActionResult> FilterByLetter(string letter)
+        {
+            return View("Index");
+        }
+
+        public async Task<IActionResult> FilterByName(string name)
+        {
+            return View("Index");
+        }
+        
+
+        public async Task<IActionResult> ForSaleOnly()
+        {
+            return View("Index");
         }
     }
 }
