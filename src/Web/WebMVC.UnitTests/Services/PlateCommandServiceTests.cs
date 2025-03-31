@@ -1,13 +1,14 @@
-using System;
-using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using AutoMapper;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using RTCodingExercise.Microservices.WebMVC.Services;
+using RTCodingExercise.Microservices.Models;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.Models;
-using RTCodingExercise.Microservices.Models;
+using System;
+using System.Threading.Tasks;
 
 public class PlateCommandServiceTests
 {
