@@ -1,5 +1,6 @@
 using RTCodingExercise.Microservices.WebMVC.Services;
 using RTCodingExercise.Microservices.Models;
+using WebMVC.Enums;
 
 namespace RTCodingExercise.Microservices.Controllers
 {
@@ -20,18 +21,25 @@ namespace RTCodingExercise.Microservices.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 20)
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 20, SortField field = SortField.None, SortDirection direction = SortDirection.Ascending)
         {
             try
             {
                 _logger.LogInformation("Sending request for plates via MassTransit.");
 
-                // Send the MassTransit request to get plates
-                var allPlates = await _plateQueryService.GetPlatesAsync();
+                // Get all plates
+                var allPlates = (await _plateQueryService.GetSortedPlatesAsync(field, direction)).ToList();
 
                 _logger.LogInformation($"Received {allPlates.Count} plates from the Catalog API.");
 
-                // Apply pagination to the retrieved plates
+                // Guard against invalid pageSize
+                pageSize = pageSize <= 0 ? 20 : pageSize;
+
+                // Calculate pagination
+                var totalPlates = allPlates.Count;
+                var totalPages = (int)Math.Ceiling(totalPlates / (double)pageSize);
+                page = Math.Clamp(page, 1, Math.Max(totalPages, 1)); // prevent overflow or underflow
+
                 var pagedPlates = allPlates
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
@@ -39,10 +47,12 @@ namespace RTCodingExercise.Microservices.Controllers
 
                 _logger.LogInformation($"Displaying page {page} with page size {pageSize}.");
 
-                // Calculate pagination details
+                // Set view data
                 ViewBag.CurrentPage = page;
                 ViewBag.PageSize = pageSize;
-                ViewBag.TotalPages = (int)Math.Ceiling((double)allPlates.Count / pageSize);
+                ViewBag.TotalPages = totalPages;
+                ViewBag.CurrentSortField = field;
+                ViewBag.CurrentSortDirection = direction;
 
                 return View(pagedPlates);
             }
@@ -83,10 +93,6 @@ namespace RTCodingExercise.Microservices.Controllers
             }
         }
 
-        public async Task<IActionResult> OrderByPrice()
-        {
-            return View("Index");
-        }
 
         public async Task<IActionResult> FilterByNumber(string number)
         {

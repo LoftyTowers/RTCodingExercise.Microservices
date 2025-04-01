@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Catalog.Domain;
+using Catalog.Domain.Enums;
 
 namespace Catalog.API.Repositories
 {
     public interface IPlateRepository
     {
-        Task<IEnumerable<Plate>> GetAllPlatesAsync();
+        Task<IEnumerable<Plate>> GetAllPlatesAsync(SortField field, SortDirection dir);
         Task<Plate?> GetPlateByIdAsync(Guid id);
         Task<Plate> AddPlateAsync(Plate plate);
         Task<bool> UpdatePlateAsync(Plate plate);

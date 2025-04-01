@@ -1,4 +1,4 @@
-using MassTransit;
+﻿using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using Catalog.API.Repositories;
@@ -73,6 +73,8 @@ namespace Catalog.API
             services.AddMassTransit(x =>
             {
                 //x.AddConsumer<ConsumerClass>();
+                x.AddConsumer<GetPlatesConsumer>();
+                x.AddConsumer<PlateAddedConsumer>();
                 x.AddConsumer<PlateReservedConsumer>();
                 x.AddConsumer<PlateUnreservedConsumer>();
                 x.AddConsumer<PlateSoldConsumer>();

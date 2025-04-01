@@ -1,4 +1,4 @@
-using MassTransit;
+﻿using MassTransit;
 using RabbitMQ.Client;
 using RTCodingExercise.Microservices.WebMVC.Services;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents;
@@ -18,7 +18,7 @@ namespace RTCodingExercise.WebMVC
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {                    
+        {                  
             // Set global culture to en-GB for £ currency formatting
             var cultureInfo = new CultureInfo("en-GB");
             CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
@@ -73,14 +73,14 @@ namespace RTCodingExercise.WebMVC
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            // if (env.IsDevelopment())
-            // {
+            if (env.IsDevelopment())
+            {
                 app.UseDeveloperExceptionPage();
-            // }
-            // else
-            // {
-            //     app.UseExceptionHandler("/Home/Error");
-            // }
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
 
             var pathBase = Configuration["PATH_BASE"];
             if (!string.IsNullOrEmpty(pathBase))

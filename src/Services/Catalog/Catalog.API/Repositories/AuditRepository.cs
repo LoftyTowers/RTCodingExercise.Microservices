@@ -20,15 +20,15 @@ namespace Catalog.API.Repositories
 
         public async Task LogAsync(Guid plateId, string action)
         {
-            var log = new AuditLog
-            {
-                PlateId = plateId,
-                Action = action,
-                Timestamp = DateTime.UtcNow
-            };
+            // var log = new AuditLog
+            // {
+            //     PlateId = plateId,
+            //     Action = action,
+            //     Timestamp = DateTime.UtcNow
+            // };
 
-            _context.AuditLogs.Add(log);
-            await _context.SaveChangesAsync();
+            // _context.AuditLogs.Add(log);
+            // await _context.SaveChangesAsync();
         }
     }
 }

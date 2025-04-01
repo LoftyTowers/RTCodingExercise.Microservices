@@ -14,8 +14,8 @@
 
         public int Numbers { get; set; }
 
-        public string? Status { get; set; }
+        // public string? Status { get; set; }
 
-        public ICollection<AuditLog> AuditLogs { get; set; }
+        // public ICollection<AuditLog> AuditLogs { get; set; }
     }
 }

@@ -1,7 +1,8 @@
 using MassTransit;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.Models;
-using Catalog.API.Repositories;
+using Catalog.API.Services;
+using Catalog.Domain.Enums;
 using AutoMapper;
 
 namespace Catalog.API.Consumers
@@ -9,13 +10,13 @@ namespace Catalog.API.Consumers
      public class GetPlatesConsumer : IConsumer<GetPlatesEvent>
     {
         private readonly ILogger<GetPlatesConsumer> _logger;
-        private readonly IPlateRepository _plateRepository;
+              private readonly IPlateService _plateService;
         private readonly IMapper _mapper;
 
-        public GetPlatesConsumer(ILogger<GetPlatesConsumer> logger, IPlateRepository plateRepository, IMapper mapper)
+        public GetPlatesConsumer(ILogger<GetPlatesConsumer> logger, IPlateService plateService, IMapper mapper)
         {
             _logger = logger;
-            _plateRepository = plateRepository;
+            _plateService = plateService;
             _mapper = mapper;
         }
 
@@ -24,18 +25,10 @@ namespace Catalog.API.Consumers
             try
             {
                 _logger.LogInformation("Received GetPlatesEvent with CorrelationId {CorrelationId}", context.CorrelationId);
+                var plateDtos = await _plateService.GetAllPlatesAsync(_mapper.Map<SortField>(context.Message.SortField), _mapper.Map<SortDirection>(context.Message.SortDirection));
 
-                var plates = await _plateRepository.GetAllPlatesAsync();
 
-                if (plates == null || !plates.Any())
-                {
-                    _logger.LogWarning("No plates found in the repository.");
-                    // You might want to respond with an empty list anyway, or throw depending on your use case
-                }
-
-                var plateDtos = _mapper.Map<List<PlateDto>>(plates);
-
-                var response = new PlatesRetrievedEvent(plateDtos)
+                var response = new PlatesRetrievedEvent(plateDtos.ToList())
                 {
                     CorrelationId = context.CorrelationId ?? Guid.NewGuid()
                 };

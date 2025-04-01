@@ -1,3 +1,6 @@
+using Catalog.API.Repositories.Helpers;
+using Catalog.Domain.Enums;
+
 namespace Catalog.API.Repositories
 {
     public class PlateRepository : IPlateRepository
@@ -14,9 +17,18 @@ namespace Catalog.API.Repositories
             }
         }
 
-        public async Task<IEnumerable<Plate>> GetAllPlatesAsync()
+        public async Task<IEnumerable<Plate>> GetAllPlatesAsync(SortField field, SortDirection dir)
         {
-            return await _context.Plates.ToListAsync();
+            var query = _context.Plates.AsQueryable();
+
+            if (!PlateSortExpressions.Map.TryGetValue(field, out var selector))
+                return await query.ToListAsync(); // fallback if invalid sort
+
+            query = dir == SortDirection.Ascending
+                ? query.OrderBy(selector)
+                : query.OrderByDescending(selector);
+
+            return await query.ToListAsync();
         }
 
         public async Task<Plate?> GetPlateByIdAsync(Guid id)
@@ -60,8 +72,8 @@ namespace Catalog.API.Repositories
 
         public async Task<ProfitStats> CalculateProfitStatsAsync()
         {
-            var soldPlates = await _context.Plates.CountAsync(p => p.Status == "Sold");
-            var totalPlates = await _context.Plates.CountAsync();
+            // var soldPlates = await _context.Plates.CountAsync(p => p.Status == "Sold");
+            // var totalPlates = await _context.Plates.CountAsync();
 
             return new ProfitStats
             {
@@ -75,7 +87,7 @@ namespace Catalog.API.Repositories
             var plate = await GetPlateByIdAsync(plateId);
             if (plate == null) throw new ArgumentNullException(nameof(plate));
 
-            plate.Status = status;
+            //plate.Status = status;
             await UpdatePlateAsync(plate);
         }
 

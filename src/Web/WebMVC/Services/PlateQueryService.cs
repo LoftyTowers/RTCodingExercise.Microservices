@@ -3,6 +3,7 @@ using MassTransit;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents;
 using RTCodingExercise.Microservices.Models;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.Models;
+using WebMVC.Enums;
 
 namespace RTCodingExercise.Microservices.WebMVC.Services
 {
@@ -36,7 +37,7 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             return plates;
         }
 
-        public async Task<List<PlateViewModel>> GetPlatesAsync()
+        public async Task<IEnumerable<PlateViewModel>> GetSortedPlatesAsync(SortField field, SortDirection direction)
         {
             try
             {
@@ -44,6 +45,8 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
 
                 var response = await _client.GetResponse<PlatesRetrievedEvent>(new GetPlatesEvent
                 {
+                    SortField = _mapper.Map<EventBus.Enums.SortField>(field),
+                    SortDirection = _mapper.Map<EventBus.Enums.SortDirection>(direction),
                     CorrelationId = Guid.NewGuid()
                 });
                 return MapPlates(response);
