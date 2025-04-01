@@ -10,7 +10,7 @@ namespace Catalog.API.Consumers
      public class GetPlatesConsumer : IConsumer<GetPlatesEvent>
     {
         private readonly ILogger<GetPlatesConsumer> _logger;
-              private readonly IPlateService _plateService;
+        private readonly IPlateService _plateService;
         private readonly IMapper _mapper;
 
         public GetPlatesConsumer(ILogger<GetPlatesConsumer> logger, IPlateService plateService, IMapper mapper)
@@ -25,7 +25,7 @@ namespace Catalog.API.Consumers
             try
             {
                 _logger.LogInformation("Received GetPlatesEvent with CorrelationId {CorrelationId}", context.CorrelationId);
-                var plateDtos = await _plateService.GetAllPlatesAsync(_mapper.Map<SortField>(context.Message.SortField), _mapper.Map<SortDirection>(context.Message.SortDirection));
+                var plateDtos = await _plateService.GetPlatesAsync(_mapper.Map<SortField>(context.Message.SortField), _mapper.Map<SortDirection>(context.Message.SortDirection), context.Message.Filter);
 
 
                 var response = new PlatesRetrievedEvent(plateDtos.ToList())

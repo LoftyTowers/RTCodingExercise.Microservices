@@ -20,11 +20,11 @@ namespace Catalog.API.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<PlateDto>> GetAllPlatesAsync(SortField field, SortDirection dir)
+        public async Task<IEnumerable<PlateDto>> GetPlatesAsync(SortField field, SortDirection dir, string? filter = null)
         {
             try
             {
-                var plates = await _plateRepository.GetAllPlatesAsync(field, dir);
+                var plates = await _plateRepository.GetPlatesAsync(field, dir, filter);
 
                 if (plates == null || !plates.Any())
                 {

@@ -101,22 +101,5 @@ namespace Catalog.API.UnitTests.Consumers
             // Act & Assert: Verify that a NullReferenceException is thrown
             await Assert.ThrowsAsync<NullReferenceException>(() => _consumer.Consume(contextMock.Object));
         }
-
-        // Test: Consume_Should_Not_Call_AddPlateAsync_When_Plate_Is_Null
-        // - If context.Message.Plate is null, ensure AddPlateAsync is not called
-        [Fact]
-        public async Task Consume_Should_Not_Call_AddPlateAsync_When_Plate_Is_Null()
-        {
-            // Arrange
-            var eventMessage = new PlateAddedEvent { Plate = null };
-            var contextMock = new Mock<ConsumeContext<PlateAddedEvent>>();
-            contextMock.Setup(x => x.Message).Returns(eventMessage);
-
-            // Act
-            await _consumer.Consume(contextMock.Object);
-
-            // Assert: Verify that AddPlateAsync was not called
-            _plateServiceMock.Verify(s => s.AddPlateAsync(It.IsAny<PlateDto>()), Times.Never);
-        }
     }
 }

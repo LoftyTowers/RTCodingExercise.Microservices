@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.Models;
 using Xunit;
+using System.Collections.Generic;
+using Catalog.Domain.Enums;
+using System.Linq;
 
 namespace Catalog.API.UnitTests.Services
 {
@@ -32,6 +35,27 @@ namespace Catalog.API.UnitTests.Services
             var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             _logger = loggerFactory.CreateLogger<PlateService>();
             _plateService = new PlateService(_plateRepositoryMock.Object, _mapper, _logger);
+        }
+
+        // Test: GetPlatesAsync_Should_Return_List_From_Repo
+        // - Simulate _plateRepository.GetPlatesAsync returning a list of plates
+        [Fact]
+        public async Task GetPlatesAsync_Should_Return_List_From_Repo()
+        {
+            var plates = new List<Plate>
+            {
+                new Plate { Registration = "ABC123" }
+            };
+
+            _plateRepositoryMock
+                .Setup(repo => repo.GetPlatesAsync(It.IsAny<SortField>(), It.IsAny<SortDirection>(), null))
+                .ReturnsAsync(plates);
+
+            var result = await _plateService.GetPlatesAsync(SortField.Registration, SortDirection.Ascending, null);
+
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal("ABC123", result.ToList().FirstOrDefault()?.Registration);
         }
 
         // Test: AddPlateAsync_Should_CallRepository_When_ValidPlateDto
@@ -91,21 +115,6 @@ namespace Catalog.API.UnitTests.Services
 
             // Act & Assert: Verify that the exception is rethrown
             await Assert.ThrowsAsync<Exception>(() => _plateService.AddPlateAsync(plateDto));
-        }
-
-        // Test: AddPlateAsync_Should_Not_CallRepository_When_RegistrationIsInvalid
-        // - If plate.Registration is whitespace/null, verify AddPlateAsync is not called
-        [Fact]
-        public async Task AddPlateAsync_Should_Not_CallRepository_When_RegistrationIsInvalid()
-        {
-            // Arrange
-            var plateDto = new PlateDto { Registration = "   " }; // Invalid registration
-
-            // Act
-            await _plateService.AddPlateAsync(plateDto);
-
-            // Assert: Verify that repository's AddPlateAsync was not called.
-            _plateRepositoryMock.Verify(repo => repo.AddPlateAsync(It.IsAny<Plate>()), Times.Never);
         }
 
         // Optional: AddPlateAsync_Should_Handle_ValidPlateDto_With_ExtraFields

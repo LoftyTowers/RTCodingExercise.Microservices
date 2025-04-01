@@ -7,14 +7,14 @@ using WebMVC.Enums;
 
 namespace RTCodingExercise.Microservices.WebMVC.Services
 {
-        public class PlateQueryService : IPlateQueryService
+    public class PlateQueryService : IPlateQueryService
     {
         #region fields
-            
+
         private readonly IRequestClient<GetPlatesEvent> _client;
         private readonly IMapper _mapper;
         private readonly ILogger<PlateQueryService> _logger;
-        
+
         #endregion
 
         public PlateQueryService(IRequestClient<GetPlatesEvent> client, IMapper mapper, ILogger<PlateQueryService> logger)
@@ -54,6 +54,26 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled exception while retrieving plates.");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<PlateViewModel>> FilterPlatesAsync(string filter)
+        {
+            try
+            {
+                _logger.LogInformation("Requesting filtered plates from the event bus.");
+
+                var response = await _client.GetResponse<PlatesRetrievedEvent>(new GetPlatesEvent
+                {
+                    Filter = filter,
+                    CorrelationId = Guid.NewGuid()
+                });
+                return MapPlates(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception while retrieving filtered plates.");
                 throw;
             }
         }

@@ -5,7 +5,7 @@ namespace Catalog.API.Services
 {
     public interface IPlateService
     {
-        Task<IEnumerable<PlateDto>> GetAllPlatesAsync(SortField field, SortDirection dir);
+        Task<IEnumerable<PlateDto>> GetPlatesAsync(SortField field, SortDirection dir, string? filter = null);
         Task AddPlateAsync(PlateDto plateDto);
     }
 }

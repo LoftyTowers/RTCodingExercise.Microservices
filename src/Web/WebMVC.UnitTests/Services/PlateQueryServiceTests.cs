@@ -9,80 +9,122 @@ using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
+using WebMVC.Enums;
+using System.Linq;
 
-public class PlateQueryServiceTests
+namespace WebMVC.UnitTests.Services
 {
-    private readonly Mock<IRequestClient<GetPlatesEvent>> _mockClient;
-    private readonly Mock<IMapper> _mockMapper;
-    private readonly Mock<ILogger<PlateQueryService>> _mockLogger;
-    private readonly PlateQueryService _service;
-
-    public PlateQueryServiceTests()
+    public class PlateQueryServiceTests
     {
-        _mockClient = new Mock<IRequestClient<GetPlatesEvent>>();
-        _mockMapper = new Mock<IMapper>();
-        _mockLogger = new Mock<ILogger<PlateQueryService>>();
+        private readonly Mock<IRequestClient<GetPlatesEvent>> _mockClient;
+        private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<ILogger<PlateQueryService>> _mockLogger;
+        private readonly PlateQueryService _service;
 
-        _service = new PlateQueryService(_mockClient.Object, _mockMapper.Object, _mockLogger.Object);
-    }
+        public PlateQueryServiceTests()
+        {
+            _mockClient = new Mock<IRequestClient<GetPlatesEvent>>();
+            _mockMapper = new Mock<IMapper>();
+            _mockLogger = new Mock<ILogger<PlateQueryService>>();
 
-    // Test: GetPlatesAsync_Should_ReturnMappedPlates_When_ResponseContainsPlates
-    // - Simulate PlatesRetrievedEvent with valid Plates
-    [Fact]
-    public async Task GetPlatesAsync_ReturnsMappedPlates_WhenResponseContainsPlates()
-    {
-        // Arrange
-        var plateDtos = new List<PlateDto>
+            _service = new PlateQueryService(_mockClient.Object, _mockMapper.Object, _mockLogger.Object);
+        }
+
+        [Fact]
+        public async Task GetSortedPlatesAsync_ReturnsMappedPlates_WhenResponseContainsPlates()
+        {
+            // Arrange
+            var plateDtos = new List<PlateDto>
         {
             new PlateDto { Id = Guid.NewGuid(), Registration = "ABC123", PurchasePrice = 1000, SalePrice = 1500 }
         };
 
-        var expectedViewModels = new List<PlateViewModel>
+            var expectedViewModels = new List<PlateViewModel>
         {
             new PlateViewModel { Id = plateDtos[0].Id, Registration = "ABC123", PurchasePrice = 1000, SalePrice = 1500 }
         };
 
-        var responseMock = new Mock<Response<PlatesRetrievedEvent>>();
-        responseMock.Setup(r => r.Message).Returns(new PlatesRetrievedEvent(plateDtos));
+            var responseMock = new Mock<Response<PlatesRetrievedEvent>>();
+            responseMock.Setup(r => r.Message).Returns(new PlatesRetrievedEvent(plateDtos));
 
+            _mockClient
+                .Setup(c => c.GetResponse<PlatesRetrievedEvent>(
+                    It.IsAny<GetPlatesEvent>(),
+                    It.IsAny<CancellationToken>(),
+                    default))
+                .ReturnsAsync(responseMock.Object);
 
-        _mockClient
-            .Setup(c => c.GetResponse<PlatesRetrievedEvent>(It.IsAny<GetPlatesEvent>(), default, default))
-            .ReturnsAsync(responseMock.Object);
+            _mockMapper
+                .Setup(m => m.Map<List<PlateViewModel>>(plateDtos))
+                .Returns(expectedViewModels);
 
-        _mockMapper
-            .Setup(m => m.Map<List<PlateViewModel>>(plateDtos))
-            .Returns(expectedViewModels);
+            // Act
+            var result = await _service.GetSortedPlatesAsync(SortField.Registration, SortDirection.Ascending);
 
-        // Act
-        var result = await _service.GetPlatesAsync();
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal("ABC123", result.ToList().FirstOrDefault()?.Registration);
+        }
 
-        // Assert
-        Assert.NotNull(result);
-        Assert.Single(result);
-        Assert.Equal("ABC123", result[0].Registration);
-    }
+        [Fact]
+        public async Task GetSortedPlatesAsync_ReturnsEmptyList_WhenResponseIsNull()
+        {
+            // Arrange
+            var responseMock = new Mock<Response<PlatesRetrievedEvent>>();
+            responseMock.Setup(r => r.Message).Returns(new PlatesRetrievedEvent(null));
 
-    // Test: GetPlatesAsync_Should_Return_EmptyList_When_ResponseHasNullPlates
-    // - Simulate PlatesRetrievedEvent.Plates = null
-    [Fact]
-    public async Task GetPlatesAsync_Should_Return_EmptyList_When_ResponseHasNullPlates()
-    {
-        // Arrange
-        var responseMock = new Mock<Response<PlatesRetrievedEvent>>();
-        responseMock.Setup(r => r.Message).Returns(new PlatesRetrievedEvent(null));
+            _mockClient
+                .Setup(c => c.GetResponse<PlatesRetrievedEvent>(
+                    It.IsAny<GetPlatesEvent>(),
+                    It.IsAny<CancellationToken>(),
+                    default))
+                .ReturnsAsync(responseMock.Object);
 
-        _mockClient
-            .Setup(c => c.GetResponse<PlatesRetrievedEvent>(It.IsAny<GetPlatesEvent>(), default, default))
-            .ReturnsAsync(responseMock.Object);
+            // Act
+            var result = await _service.GetSortedPlatesAsync(SortField.Registration, SortDirection.Ascending);
 
-        // Act
-        var result = await _service.GetPlatesAsync();
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
 
-        // Assert
-        Assert.NotNull(result);
-        Assert.Empty(result);
+        [Fact]
+        public async Task FilterPlatesAsync_ReturnsMappedResults()
+        {
+            // Arrange
+            var plateDtos = new List<PlateDto>
+        {
+            new PlateDto { Id = Guid.NewGuid(), Registration = "D44NNY", PurchasePrice = 1000, SalePrice = 2000 }
+        };
+
+            var expectedViewModels = new List<PlateViewModel>
+        {
+            new PlateViewModel { Id = plateDtos[0].Id, Registration = "D44NNY", PurchasePrice = 1000, SalePrice = 2000 }
+        };
+
+            var responseMock = new Mock<Response<PlatesRetrievedEvent>>();
+            responseMock.Setup(r => r.Message).Returns(new PlatesRetrievedEvent(plateDtos));
+
+            _mockClient
+                .Setup(c => c.GetResponse<PlatesRetrievedEvent>(
+                    It.IsAny<GetPlatesEvent>(),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<RequestTimeout>()))
+                .ReturnsAsync(responseMock.Object);
+
+            _mockMapper
+                .Setup(m => m.Map<List<PlateViewModel>>(plateDtos))
+                .Returns(expectedViewModels);
+
+            // Act
+            var result = await _service.FilterPlatesAsync("Danny");
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("D44NNY", result.ToList().FirstOrDefault()?.Registration);
+        }
     }
 }

@@ -7,6 +7,7 @@ namespace RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEven
     {
         public SortField SortField { get; set; } = SortField.None;
         public SortDirection SortDirection { get; set; } = SortDirection.Ascending;
+        public string Filter { get; set; } = string.Empty;
         public GetPlatesEvent() : base()
         {
             CorrelationId = Guid.NewGuid();

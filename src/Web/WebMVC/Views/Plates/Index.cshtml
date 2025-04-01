@@ -38,6 +38,29 @@
         <button type="submit" class="btn btn-primary">Add Plate</button>
     </div>
 </form>
+<h4 class="mt-4 mb-2">Search Plates</h4>
+@if (TempData["FilterError"] != null)
+{
+    <div class="alert alert-warning" role="alert">
+        @TempData["FilterError"]
+    </div>
+}
+<form method="get" asp-action="Filter" class="row g-3 align-items-end mb-4">
+    <div class="col-md-6">
+        <label for="query" class="form-label">Enter plate, letters or numbers</label>
+        <input type="text" id="query" name="query" class="form-control" placeholder="e.g. AB1" value="@ViewBag.Query" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label d-block invisible">Search</label>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label d-block invisible">Reset</label>
+        <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Plates")">Reset</a>
+    </div>
+</form>
 <hr />
 <h2 class="mt-4 mb-3">Available Plates</h2>
 

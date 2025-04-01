@@ -1,6 +1,6 @@
-using RTCodingExercise.Microservices.WebMVC.Services;
 using RTCodingExercise.Microservices.Models;
 using WebMVC.Enums;
+using System.Text.RegularExpressions;
 
 namespace RTCodingExercise.Microservices.Controllers
 {
@@ -93,20 +93,39 @@ namespace RTCodingExercise.Microservices.Controllers
             }
         }
 
-
-        public async Task<IActionResult> FilterByNumber(string number)
+        [HttpGet]
+        public async Task<IActionResult> Filter(string? query, int page = 1, int pageSize = 20)
         {
-            return View("Index");
-        }
+            try
+            {
+                _logger.LogInformation("Filtering plates with query: {Query}", query);
 
-        public async Task<IActionResult> FilterByLetter(string letter)
-        {
-            return View("Index");
-        }
+                if (!string.IsNullOrWhiteSpace(query) && !Regex.IsMatch(query, @"^[A-Za-z0-9 ]+$"))
+                {
+                    _logger.LogWarning("Invalid characters detected in query: {Query}", query);
+                    TempData["FilterError"] = "Please enter only letters and numbers (e.g. 'JAMES' or 'TAG44'). Special characters are not allowed.";
+                    return RedirectToAction("Index");
+                }
 
-        public async Task<IActionResult> FilterByName(string name)
-        {
-            return View("Index");
+                var filteredPlates = await _plateQueryService.FilterPlatesAsync(query);
+
+                var pagedPlates = filteredPlates
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = (int)Math.Ceiling((double)Math.Max(filteredPlates.Count(), 1) / pageSize);
+                ViewBag.Query = query;
+
+                return View("Index", pagedPlates); // Reuse the Index view
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while filtering plates.");
+                return RedirectToAction("Error", "Home");
+            }
         }
         
 

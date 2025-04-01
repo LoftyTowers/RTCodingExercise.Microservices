@@ -1,4 +1,4 @@
-using Catalog.API.Repositories.Helpers;
+using Catalog.API.Helpers;
 using Catalog.Domain.Enums;
 
 namespace Catalog.API.Repositories
@@ -17,18 +17,26 @@ namespace Catalog.API.Repositories
             }
         }
 
-        public async Task<IEnumerable<Plate>> GetAllPlatesAsync(SortField field, SortDirection dir)
+        public async Task<IEnumerable<Plate>> GetPlatesAsync(SortField field, SortDirection direction, string? filter = null)
         {
-            var query = _context.Plates.AsQueryable();
+            try
+            {
+                _logger.LogInformation("Getting plates with sort {SortField} {SortDirection} and filter '{Filter}'", field, direction, filter);
 
-            if (!PlateSortExpressions.Map.TryGetValue(field, out var selector))
-                return await query.ToListAsync(); // fallback if invalid sort
+                var query = _context.Plates
+                    .AsQueryable()
+                    .ApplyBroadVisualFilter(filter)
+                    .ApplySort(field, direction);
 
-            query = dir == SortDirection.Ascending
-                ? query.OrderBy(selector)
-                : query.OrderByDescending(selector);
+                var result = await query.ToListAsync();
 
-            return await query.ToListAsync();
+                return result.ApplyVisualPrecision(filter);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to retrieve plates from the database.");
+                throw;
+            }
         }
 
         public async Task<Plate?> GetPlateByIdAsync(Guid id)

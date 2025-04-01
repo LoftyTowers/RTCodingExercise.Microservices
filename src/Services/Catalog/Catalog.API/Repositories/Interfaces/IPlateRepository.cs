@@ -4,7 +4,7 @@ namespace Catalog.API.Repositories
 {
     public interface IPlateRepository
     {
-        Task<IEnumerable<Plate>> GetAllPlatesAsync(SortField field, SortDirection dir);
+        Task<IEnumerable<Plate>> GetPlatesAsync(SortField field, SortDirection dir, string? filter = null);
         Task<Plate?> GetPlateByIdAsync(Guid id);
         Task<Plate> AddPlateAsync(Plate plate);
         Task<bool> UpdatePlateAsync(Plate plate);
