@@ -32,7 +32,6 @@ namespace RTCodingExercise.WebMVC
             // Register the PlateQueryService
             services.AddScoped<IPlateQueryService, PlateQueryService>();
             services.AddScoped<IPlateCommandService, PlateCommandService>();
-            services.AddScoped<IReservationCommandService, ReservationCommandService>();
             services.AddScoped<ISalesCommandService, SalesCommandService>();
             services.AddScoped<IPromotionCommandService, PromotionCommandService>();
 

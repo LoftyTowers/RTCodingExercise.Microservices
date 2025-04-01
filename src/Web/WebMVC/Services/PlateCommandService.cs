@@ -47,58 +47,43 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             }
         }
 
-        public async Task ReservePlateAsync(PlateViewModel plate)
+        public async Task ToggleReservationAsync(PlateViewModel plate)
         {
             try
             {
-                if (plate == null) throw new ArgumentNullException(nameof(plate));
-                if (string.IsNullOrWhiteSpace(plate.Registration))
-                    throw new ArgumentException("Plate registration cannot be null or empty.", nameof(plate.Registration));
+                if (plate == null)
+                    throw new ArgumentNullException(nameof(plate));
+
+                if (plate.Id == Guid.Empty)
+                    throw new ArgumentException("Plate ID cannot be empty.", nameof(plate.Id));
+
+                _logger.LogInformation("Toggling reservation for plate: {@Plate}", plate);
+
+                // Flip the reservation flag
+                plate.IsReserved = !plate.IsReserved;
 
                 var plateDto = _mapper.Map<PlateDto>(plate);
-                var eventMessage = new PlateUnreservedEvent(plateDto)
+
+                var toggleEvent = new PlateReserveToggleEvent(plateDto)
                 {
                     CorrelationId = Guid.NewGuid()
                 };
-                await _publishEndpoint.Publish(eventMessage);
+
+                await _publishEndpoint.Publish(toggleEvent);
+
+                _logger.LogInformation("Reservation toggled. Plate ID: {PlateId}, New Reserved State: {IsReserved}", plate.Id, plate.IsReserved);
             }
             catch (RequestTimeoutException ex)
             {
-                _logger.LogError(ex, "Timeout occurred while sending PlateReservedEvent.");
+                _logger.LogError(ex, "Timeout occurred while publishing reservation toggle for plate ID: {PlateId}", plate?.Id);
                 throw new ApplicationException("The catalog service did not respond in time.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send PlateReservedEvent.");
+                _logger.LogError(ex, "Error occurred while toggling reservation for plate ID: {PlateId}", plate?.Id);
                 throw new ApplicationException("An error occurred while processing your request.");
             }
         }
 
-        public async Task UnreservePlateAsync(PlateViewModel plate)
-        {
-            try
-            {
-                if (plate == null) throw new ArgumentNullException(nameof(plate));
-                if (string.IsNullOrWhiteSpace(plate.Registration))
-                    throw new ArgumentException("Plate registration cannot be null or empty.", nameof(plate.Registration));
-
-                var plateDto = _mapper.Map<PlateDto>(plate);
-                var eventMessage = new PlateUnreservedEvent(plateDto)
-                {
-                    CorrelationId = Guid.NewGuid()
-                };
-                await _publishEndpoint.Publish(eventMessage);
-            }
-            catch (RequestTimeoutException ex)
-            {
-                _logger.LogError(ex, "Timeout occurred while sending PlateUnreservedEvent.");
-                throw new ApplicationException("The catalog service did not respond in time.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send PlateUnreservedEvent.");
-                throw new ApplicationException("An error occurred while processing your request.");
-            }
-        }
     }
 }

@@ -18,5 +18,8 @@ namespace RTCodingExercise.Microservices.Models
         [Display(Name = "Sale Price (inc. VAT)")]
         [DataType(DataType.Currency)]
         public decimal SalePrice { get; set; }
+
+        [Display(Name = "Reserved")]
+        public bool IsReserved { get; set; }
     }
 }

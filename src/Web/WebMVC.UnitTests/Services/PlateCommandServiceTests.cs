@@ -27,7 +27,7 @@ namespace WebMVC.UnitTests.Services
             _mockLogger = new Mock<ILogger<PlateCommandService>>();
             _service = new PlateCommandService(_mockPublisher.Object, _mockMapper.Object, _mockLogger.Object);
         }
-        
+
         [Fact]
         public async Task AddPlateAsync_Should_Map_And_PublishEvent_When_ValidPlateProvided()
         {
@@ -92,6 +92,72 @@ namespace WebMVC.UnitTests.Services
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<ApplicationException>(() => _service.AddPlateAsync(plate));
+            Assert.Contains("An error occurred while processing your request", ex.Message);
+        }
+
+        [Fact]
+        public async Task ToggleReservationAsync_Should_ToggleAndPublishEvent_When_ValidPlateProvided()
+        {
+            // Arrange
+            var originalIsReserved = false;
+            var plate = new PlateViewModel
+            {
+                Id = Guid.NewGuid(),
+                Registration = "TEST123",
+                IsReserved = originalIsReserved
+            };
+
+            var expectedDto = new PlateDto
+            {
+                Id = plate.Id,
+                Registration = plate.Registration,
+                IsReserved = !originalIsReserved // should be flipped
+            };
+
+            _mockMapper.Setup(m => m.Map<PlateDto>(It.IsAny<PlateViewModel>()))
+                       .Returns(expectedDto);
+
+            // Act
+            await _service.ToggleReservationAsync(plate);
+
+            // Assert
+            _mockPublisher.Verify(p => p.Publish(It.Is<PlateReserveToggleEvent>(e =>
+                e.Plate.Id == expectedDto.Id &&
+                e.Plate.IsReserved == expectedDto.IsReserved
+            ), default), Times.Once);
+        }
+
+        [Fact]
+        public async Task ToggleReservationAsync_Should_ThrowApplicationException_When_TimeoutOccurs()
+        {
+            // Arrange
+            var plate = new PlateViewModel { Id = Guid.NewGuid(), Registration = "TIMEOUT", IsReserved = false };
+            var dto = new PlateDto { Id = plate.Id, Registration = "TIMEOUT", IsReserved = true };
+
+            _mockMapper.Setup(m => m.Map<PlateDto>(plate)).Returns(dto);
+            _mockPublisher
+                .Setup(p => p.Publish(It.IsAny<PlateReserveToggleEvent>(), default))
+                .ThrowsAsync(new RequestTimeoutException("Timeout"));
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<ApplicationException>(() => _service.ToggleReservationAsync(plate));
+            Assert.Contains("did not respond in time", ex.Message);
+        }
+
+        [Fact]
+        public async Task ToggleReservationAsync_Should_ThrowApplicationException_When_PublishFails()
+        {
+            // Arrange
+            var plate = new PlateViewModel { Id = Guid.NewGuid(), Registration = "FAIL", IsReserved = false };
+            var dto = new PlateDto { Id = plate.Id, Registration = "FAIL", IsReserved = true };
+
+            _mockMapper.Setup(m => m.Map<PlateDto>(plate)).Returns(dto);
+            _mockPublisher
+                .Setup(p => p.Publish(It.IsAny<PlateReserveToggleEvent>(), default))
+                .ThrowsAsync(new Exception("Unhandled"));
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<ApplicationException>(() => _service.ToggleReservationAsync(plate));
             Assert.Contains("An error occurred while processing your request", ex.Message);
         }
     }

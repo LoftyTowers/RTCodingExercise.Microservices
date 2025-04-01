@@ -127,7 +127,28 @@ namespace RTCodingExercise.Microservices.Controllers
                 return RedirectToAction("Error", "Home");
             }
         }
-        
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleReservation(PlateViewModel plate)
+        {
+            try
+            {
+                await _plateCommandService.ToggleReservationAsync(plate);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to toggle reservation for plate ID: {Id}", plate?.Id);
+                TempData["ErrorMessage"] = "Could not update reservation status. Please try again.";
+            }
+
+            return RedirectToAction("Index", new
+            {
+                page = ViewBag.CurrentPage,
+                pageSize = ViewBag.PageSize,
+                field = ViewBag.CurrentSortField,
+                direction = ViewBag.CurrentSortDirection
+            });
+        }
 
         public async Task<IActionResult> ForSaleOnly()
         {

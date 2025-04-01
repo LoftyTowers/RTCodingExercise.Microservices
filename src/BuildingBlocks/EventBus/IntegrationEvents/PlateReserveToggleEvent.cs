@@ -2,11 +2,11 @@ using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.M
 
 namespace RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents
 {
-    public class PlateReservedEvent : IntegrationEvent
+    public class PlateReserveToggleEvent : IntegrationEvent
     {
         public PlateDto Plate { get; set; }
 
-        public PlateReservedEvent(PlateDto plate) : base()
+        public PlateReserveToggleEvent(PlateDto plate) : base()
         {
             Plate = plate;
         }
