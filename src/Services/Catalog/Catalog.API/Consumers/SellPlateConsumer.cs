@@ -6,13 +6,13 @@ using AutoMapper;
 
 namespace Catalog.API.Consumers
 {
-    public class SellPlateEventConsumer : IConsumer<SellPlateEvent>
+    public class SellPlateConsumer : IConsumer<SellPlateEvent>
     {
         private readonly IPlateService _plateService;
         private readonly IMapper _mapper;
-        private readonly ILogger<SellPlateEventConsumer> _logger;
+        private readonly ILogger<SellPlateConsumer> _logger;
 
-        public SellPlateEventConsumer(IPlateService plateService, IMapper mapper, ILogger<SellPlateEventConsumer> logger)
+        public SellPlateConsumer(IPlateService plateService, IMapper mapper, ILogger<SellPlateConsumer> logger)
         {
             _plateService = plateService;
             _mapper = mapper;
