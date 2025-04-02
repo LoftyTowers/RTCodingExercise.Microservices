@@ -129,11 +129,11 @@ namespace RTCodingExercise.Microservices.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ToggleReservation(PlateViewModel plate)
+        public async Task<IActionResult> UpdateStatus(PlateViewModel plate)
         {
             try
             {
-                await _plateCommandService.ToggleReservationAsync(plate);
+                await _plateCommandService.UpdateStatusAsync(plate);
             }
             catch (Exception ex)
             {

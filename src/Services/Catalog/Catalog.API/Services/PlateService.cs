@@ -58,5 +58,20 @@ namespace Catalog.API.Services
                 throw;
             }
         }
+
+        public async Task UpdateStatusAsync(Plate plate)
+        {
+            try
+            {
+                await _plateRepository.UpdateStatusAsync(plate);
+                //await _auditRepository.LogAsync(plate, "Reserved");
+                _logger.LogInformation("Plate {PlateId} reserved successfully.", plate);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reserving plate {PlateId}", plate);
+                throw;
+            }
+        }
     }
 }

@@ -6,22 +6,24 @@ using AutoMapper;
 
 namespace Catalog.API.Consumers
 {
-    public class PlateReservedConsumer : IConsumer<PlateReservedEvent>
+    public class PlateStatusUpdateConsumer : IConsumer<PlateStatusUpdateEvent>
     {
-        private readonly IReservationService _reservationService;
-        private readonly ILogger<PlateReservedConsumer> _logger;
+        private readonly IPlateService _plateService;
+        private readonly ILogger<PlateStatusUpdateConsumer> _logger;
+        private readonly IMapper _mapper;
 
-        public PlateReservedConsumer(IReservationService reservationService, ILogger<PlateReservedConsumer> logger)
+        public PlateStatusUpdateConsumer(IPlateService plateService, ILogger<PlateStatusUpdateConsumer> logger, IMapper mapper)
         {
-            _reservationService = reservationService;
+            _plateService = plateService;
             _logger = logger;
+            _mapper = mapper;
         }
 
-        public async Task Consume(ConsumeContext<PlateReservedEvent> context)
+        public async Task Consume(ConsumeContext<PlateStatusUpdateEvent> context)
         {
             try
             {
-                await _reservationService.ReservePlateAsync(context.Message.Plate.Id);
+                await _plateService.UpdateStatusAsync(_mapper.Map<Plate>(context.Message.Plate));
                 _logger.LogInformation("Processed PlateReservedEvent for Plate ID: {PlateId}", context.Message.Plate.Id);
             }
             catch (Exception ex)

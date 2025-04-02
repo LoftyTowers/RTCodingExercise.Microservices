@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using WebMVC.Enums;
 
 namespace RTCodingExercise.Microservices.Models
 {
@@ -19,7 +20,7 @@ namespace RTCodingExercise.Microservices.Models
         [DataType(DataType.Currency)]
         public decimal SalePrice { get; set; }
 
-        [Display(Name = "Reserved")]
-        public bool IsReserved { get; set; }
+        [Display(Name = "Status")]
+        public Status Status { get; set; }
     }
 }

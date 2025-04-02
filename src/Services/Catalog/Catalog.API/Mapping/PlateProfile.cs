@@ -8,10 +8,11 @@ namespace Catalog.API.Mapping
     {
         public PlateProfile()
         {
-            CreateMap<PlateDto, Plate>().ReverseMap();
-            CreateMap<ProfitStatsDto, ProfitStats>().ReverseMap();
-            CreateMap<SortField, EventBus.Enums.SortField>();
-            CreateMap<SortDirection, EventBus.Enums.SortDirection>();
+            CreateMap<Plate, PlateDto>().ReverseMap();
+            CreateMap<ProfitStats, ProfitStatsDto>().ReverseMap();
+            CreateMap<SortField, EventBus.Enums.SortField>().ReverseMap();
+            CreateMap<SortDirection, EventBus.Enums.SortDirection>().ReverseMap();
+            CreateMap<Domain.Enums.Status, EventBus.Enums.Status>().ReverseMap();
         }
     }
 }

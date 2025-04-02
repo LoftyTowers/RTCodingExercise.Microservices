@@ -9,10 +9,11 @@ namespace RTCodingExercise.Microservices.WebMVC.Mapping
     {
         public PlateProfile()
         {
-            CreateMap<PlateDto, PlateViewModel>().ReverseMap();
-            CreateMap<ProfitStatsDto, ProfitStatsViewModel>().ReverseMap();
-            CreateMap<SortField, EventBus.Enums.SortField>();
-            CreateMap<SortDirection, EventBus.Enums.SortDirection>();
+            CreateMap<PlateViewModel, PlateDto>().ReverseMap();
+            CreateMap<ProfitStatsViewModel, ProfitStatsDto>().ReverseMap();
+            CreateMap<SortField, EventBus.Enums.SortField>().ReverseMap();
+            CreateMap<SortDirection, EventBus.Enums.SortDirection>().ReverseMap();
+            CreateMap<Status, EventBus.Enums.Status>().ReverseMap();
 
         }
     }

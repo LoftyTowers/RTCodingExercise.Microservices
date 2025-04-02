@@ -90,9 +90,9 @@ namespace Catalog.API.Repositories
             };
         }
 
-        public async Task UpdateStatusAsync(Guid plateId, string status)
+        public async Task UpdateStatusAsync(Plate plate)
         {
-            var plate = await GetPlateByIdAsync(plateId);
+            //var plate = await GetPlateByIdAsync(plateId);
             if (plate == null) throw new ArgumentNullException(nameof(plate));
 
             //plate.Status = status;

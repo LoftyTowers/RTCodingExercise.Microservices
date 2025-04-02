@@ -10,35 +10,35 @@ namespace Catalog.API.Consumers
 
     public class GetProfitStatsConsumer : IConsumer<GetProfitStatsEvent>
     {
-        private readonly ISalesService _salesService;
-        private readonly ILogger<GetProfitStatsConsumer> _logger;
-        private readonly IMapper _mapper;
+        // private readonly ISalesService _salesService;
+        // private readonly ILogger<GetProfitStatsConsumer> _logger;
+        // private readonly IMapper _mapper;
 
-        public GetProfitStatsConsumer(ISalesService salesService, ILogger<GetProfitStatsConsumer> logger, IMapper mapper)
-        {
-            _salesService = salesService;
-            _logger = logger;
-            _mapper = mapper;
-        }
+        // public GetProfitStatsConsumer(ISalesService salesService, ILogger<GetProfitStatsConsumer> logger, IMapper mapper)
+        // {
+        //     _salesService = salesService;
+        //     _logger = logger;
+        //     _mapper = mapper;
+        // }
 
         public async Task Consume(ConsumeContext<GetProfitStatsEvent> context)
         {
-            try
-            {
-                var stats = await _salesService.CalculateProfitStatsAsync();
-                await context.RespondAsync(new ProfitStatsCalculatedEvent(_mapper.Map<ProfitStatsDto>(stats))
-                {
-                    CorrelationId = context.CorrelationId ?? Guid.NewGuid()
-                });
+            // try
+            // {
+            //     var stats = await _salesService.CalculateProfitStatsAsync();
+            //     await context.RespondAsync(new ProfitStatsCalculatedEvent(_mapper.Map<ProfitStatsDto>(stats))
+            //     {
+            //         CorrelationId = context.CorrelationId ?? Guid.NewGuid()
+            //     });
 
-                _logger.LogInformation("Responded to GetProfitStatsEvent with revenue: £{Revenue}, margin: {Margin:P2}",
-                    stats.TotalRevenue, stats.AverageProfitMargin);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error responding to GetProfitStatsEvent.");
-                throw;
-            }
+            //     _logger.LogInformation("Responded to GetProfitStatsEvent with revenue: £{Revenue}, margin: {Margin:P2}",
+            //         stats.TotalRevenue, stats.AverageProfitMargin);
+            // }
+            // catch (Exception ex)
+            // {
+            //     _logger.LogError(ex, "Error responding to GetProfitStatsEvent.");
+            //     throw;
+            // }
         }
     }   
 }

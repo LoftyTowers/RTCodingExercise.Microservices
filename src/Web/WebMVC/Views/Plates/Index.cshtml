@@ -1,4 +1,5 @@
 @model IEnumerable<RTCodingExercise.Microservices.Models.PlateViewModel>
+@using WebMVC.Helpers;
 
 @{
     // Pagination state
@@ -114,8 +115,8 @@
                     }
                 </a>
             </th>
-            <th>Reserved</th>
-            <th>Actions</th>
+            <th>Status</th>
+            <th>UpdateStatus</th>
         </tr>
     </thead>
     <tbody>
@@ -129,13 +130,16 @@
                 <td>@plate.Registration</td>
                 <td>@plate.PurchasePrice.ToString("C")</td>
                 <td>@plate.SalePrice.ToString("C")</td>
-                <td>@(plate.IsReserved ? "Yes" : "No")</td>
+                <td>@plate.Status</td>
                 <td>
-                    <form asp-action="ToggleReservation" asp-controller="Plates" method="post">
-                        <input type="hidden" name="id" value="@plate.Id" />
-                        <button type="submit" class="btn btn-sm @(plate.IsReserved ? "btn-warning" : "btn-success")">
-                            @(plate.IsReserved ? "Unreserve" : "Reserve")
-                        </button>
+                    <form asp-action="UpdateStatus" asp-controller="Plates" method="post" class="d-flex align-items-center">
+                        <input type="hidden" name="Id" value="@plate.Id" />
+
+                        <select class="form-select me-2" name="Status" onchange="this.form.submit()">
+                            <option value="10" selected="@((int)plate.Status == 10)">Available</option>
+                            <option value="20" selected="@((int)plate.Status == 20)">Reserved</option>
+                            <option value="30" selected="@((int)plate.Status == 30)">Sold</option>
+                        </select>
                     </form>
                 </td>
             </tr>

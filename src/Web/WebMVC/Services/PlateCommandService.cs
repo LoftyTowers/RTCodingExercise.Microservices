@@ -47,7 +47,7 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             }
         }
 
-        public async Task ToggleReservationAsync(PlateViewModel plate)
+        public async Task UpdateStatusAsync(PlateViewModel plate)
         {
             try
             {
@@ -59,19 +59,16 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
 
                 _logger.LogInformation("Toggling reservation for plate: {@Plate}", plate);
 
-                // Flip the reservation flag
-                plate.IsReserved = !plate.IsReserved;
-
                 var plateDto = _mapper.Map<PlateDto>(plate);
 
-                var toggleEvent = new PlateReserveToggleEvent(plateDto)
+                var toggleEvent = new PlateStatusUpdateEvent(plateDto)
                 {
                     CorrelationId = Guid.NewGuid()
                 };
 
                 await _publishEndpoint.Publish(toggleEvent);
 
-                _logger.LogInformation("Reservation toggled. Plate ID: {PlateId}, New Reserved State: {IsReserved}", plate.Id, plate.IsReserved);
+                _logger.LogInformation("Reservation toggled. Plate ID: {PlateId}, Status: {Status}", plate.Id, plate.Status);
             }
             catch (RequestTimeoutException ex)
             {

@@ -7,5 +7,6 @@ namespace Catalog.API.Services
     {
         Task<IEnumerable<PlateDto>> GetPlatesAsync(SortField field, SortDirection dir, string? filter = null);
         Task AddPlateAsync(PlateDto plateDto);
+        Task UpdateStatusAsync(Plate plate);
     }
 }
