@@ -14,7 +14,9 @@
 
         public int Numbers { get; set; }
 
-        // public string? Status { get; set; }
+        public int StatusId { get; set; } = 10; // FK to "Available"
+
+        // public Status Status { get; set; }
 
         // public ICollection<AuditLog> AuditLogs { get; set; }
     }

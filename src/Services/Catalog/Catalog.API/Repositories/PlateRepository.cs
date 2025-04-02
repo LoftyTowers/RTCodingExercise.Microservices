@@ -21,14 +21,20 @@ namespace Catalog.API.Repositories
         {
             try
             {
+                bool onlyAvailable = !string.IsNullOrWhiteSpace(filter);
                 _logger.LogInformation("Getting plates with sort {SortField} {SortDirection} and filter '{Filter}'", field, direction, filter);
 
                 var query = _context.Plates
                     .AsQueryable()
-                    .ApplyBroadVisualFilter(filter)
-                    .ApplySort(field, direction);
+                    .ApplyBroadVisualFilter(filter);
 
-                var result = await query.ToListAsync();
+                if (onlyAvailable)
+                {
+                    query = query.Where(p => p.StatusId == (int)Domain.Enums.Status.Available);
+
+                }
+
+                var result = await query.ApplySort(field, direction).ToListAsync();
 
                 return result.ApplyVisualPrecision(filter);
             }
