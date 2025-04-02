@@ -34,9 +34,35 @@ namespace WebMVC.UnitTests.Services
         }
 
         [Fact]
-        public async Task Add_code_ToTest_SellPlate()
+        public async Task SellPlate_Should_Map_And_Publish_SellPlateEvent()
         {
-            
+            // Arrange
+            var plate = new PlateViewModel
+            {
+                Id = Guid.NewGuid(),
+                FinalSalePrice = 999.99M,
+                PromoCodeUsed = "SUMMER23"
+            };
+
+            var dto = new PlateDto
+            {
+                Id = plate.Id,
+                FinalSalePrice = plate.FinalSalePrice,
+                PromoCodeUsed = plate.PromoCodeUsed
+            };
+
+            _mockMapper.Setup(m => m.Map<PlateDto>(plate)).Returns(dto);
+
+            // Act
+            await _service.SellPlate(plate);
+
+            // Assert
+            _mockPublisher.Verify(p => p.Publish(It.Is<SellPlateEvent>(e =>
+                e.Plate.Id == dto.Id &&
+                e.Plate.FinalSalePrice == dto.FinalSalePrice &&
+                e.Plate.PromoCodeUsed == dto.PromoCodeUsed &&
+                e.CorrelationId != Guid.Empty
+            ), default), Times.Once);
         }
     }
 }
