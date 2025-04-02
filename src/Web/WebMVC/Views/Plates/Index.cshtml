@@ -148,7 +148,7 @@
                     <form asp-action="UpdateStatus" asp-controller="Plates" method="post" class="d-flex align-items-center">
                         <input type="hidden" name="Id" value="@plate.Id" />
 
-                        <select class="form-select me-2" name="Status" onchange="this.form.submit()">
+                        <select class="form-select me-2" name="Status" onchange="handleStatusChange(this, '@plate.Id')">
                             <option value="10" selected="@((int)plate.Status == 10)">Available</option>
                             <option value="20" selected="@((int)plate.Status == 20)">Reserved</option>
                             <option value="30" selected="@((int)plate.Status == 30)">Sold</option>
@@ -185,3 +185,38 @@
         </li>
     </ul>
 </nav>
+
+<script>
+    function handleStatusChange(select, plateId) {
+        const selected = parseInt(select.value);
+        if (selected === 30) { // "Sold"
+            const promoCode = prompt("Enter promo code if you have one:");
+            if (promoCode !== null) {
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = "/Sales/SellPlate";
+
+                const idInput = document.createElement("input");
+                idInput.type = "hidden";
+                idInput.name = "id";
+                idInput.value = plateId;
+                form.appendChild(idInput);
+
+                const promoInput = document.createElement("input");
+                promoInput.type = "hidden";
+                promoInput.name = "promoCode";
+                promoInput.value = promoCode;
+                form.appendChild(promoInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            } else {
+                // If cancelled, revert to original value
+                select.value = ""; // Or set it back to original status if needed
+            }
+        } else {
+            // Submit parent form for "Available" or "Reserved"
+            select.form.submit();
+        }
+    }
+</script>

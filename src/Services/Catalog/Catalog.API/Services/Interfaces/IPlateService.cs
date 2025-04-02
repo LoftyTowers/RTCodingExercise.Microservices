@@ -8,5 +8,6 @@ namespace Catalog.API.Services
         Task<PlateDataDto> GetPlatesAsync(SortField field, SortDirection dir, string? filter = null, bool? onlyAvailable = false);
         Task AddPlateAsync(PlateDto plateDto);
         Task UpdateStatusAsync(Plate plate);
+        Task SellPlateAsync(Plate plate);
     }
 }

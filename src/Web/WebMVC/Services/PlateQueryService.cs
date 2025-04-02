@@ -26,13 +26,13 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
 
         private PlateDataViewModel MapPlates(Response<PlatesRetrievedEvent> response)
         {
-            if (response.Message.Plates == null || !response.Message.Plates.Any())
+            if ((response?.Message?.PlateData == null) || !(response.Message.PlateData.Plates?.Any() ?? false))
             {
                 _logger.LogWarning("No plates found in the response.");
                 return new PlateDataViewModel();
             }
 
-            var plateData = _mapper.Map<PlateDataViewModel>(response.Message.Plates);
+            var plateData = _mapper.Map<PlateDataViewModel>(response.Message.PlateData);
             _logger.LogInformation($"Mapped {plateData.Plates.Count} plates successfully.");
             return plateData;
         }

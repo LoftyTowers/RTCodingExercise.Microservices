@@ -8,7 +8,6 @@ namespace Catalog.API.Repositories
         Task<Plate> AddPlateAsync(Plate plate);
         Task UpdatePlateStatusAsync(Plate plate);
         Task<ProfitStats> CalculateProfitStatsAsync();
-        Task ApplyFlatDiscountAsync(decimal discountAmount);
-        Task ApplyPercentDiscountAsync(decimal discountPercentage);
+        Task SellPlateAsync(Plate plate);
     }
 }

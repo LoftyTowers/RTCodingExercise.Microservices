@@ -75,9 +75,24 @@ namespace Catalog.API.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reserving plate {PlateId}", plate);
+                _logger.LogError(ex, "Error reserving plate {PlateId}", plate.Id);
                 throw;
             }
         }
+
+        public async Task SellPlateAsync(Plate plate)
+        {
+            try
+            {
+                _logger.LogInformation("Service: Routing SellPlateAsync for Plate ID {Id}", plate.Id);
+                await _plateRepository.SellPlateAsync(plate);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error selling plate {PlateId}", plate.Id);
+                throw;
+            }
+        }
+
     }
 }

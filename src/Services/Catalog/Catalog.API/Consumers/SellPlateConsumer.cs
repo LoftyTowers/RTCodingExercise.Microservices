@@ -1,0 +1,44 @@
+using MassTransit;
+using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents;
+using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.Models;
+using Catalog.API.Services;
+using AutoMapper;
+
+namespace Catalog.API.Consumers
+{
+    public class SellPlateEventConsumer : IConsumer<SellPlateEvent>
+    {
+        private readonly IPlateService _plateService;
+        private readonly IMapper _mapper;
+        private readonly ILogger<SellPlateEventConsumer> _logger;
+
+        public SellPlateEventConsumer(IPlateService plateService, IMapper mapper, ILogger<SellPlateEventConsumer> logger)
+        {
+            _plateService = plateService;
+            _mapper = mapper;
+            _logger = logger;
+        }
+        public async Task Consume(ConsumeContext<SellPlateEvent> context)
+        {
+            var dto = context.Message.Plate;
+
+            _logger.LogInformation("SellPlateEvent received: ID={Id}, Promo={Promo}, FinalPrice={Price}",
+                dto.Id, dto.PromoCodeUsed, dto.FinalSalePrice);
+
+            try
+            {
+                var plate = _mapper.Map<Plate>(dto);
+
+                await _plateService.SellPlateAsync(plate);
+
+                _logger.LogInformation("SellPlateEvent processed successfully for ID={Id}", plate.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing SellPlateEvent for Plate ID={Id}", dto.Id);
+                throw;
+            }
+        }
+    }
+
+}

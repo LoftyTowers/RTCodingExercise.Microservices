@@ -4,11 +4,11 @@ namespace RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEven
 {
     public class PlatesRetrievedEvent : IntegrationEvent
     {
-        public PlateDataDto Plates { get; set; }
+        public PlateDataDto PlateData { get; set; }
 
-        public PlatesRetrievedEvent(PlateDataDto plates) : base()
+        public PlatesRetrievedEvent(PlateDataDto plateData) : base()
         {
-            Plates = plates;
+            PlateData = plateData;
         }
     }
 }

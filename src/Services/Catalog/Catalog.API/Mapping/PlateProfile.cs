@@ -8,7 +8,7 @@ namespace Catalog.API.Mapping
     {
         public PlateProfile()
         {
-            CreateMap<Plate, PlateDto>().ReverseMap();
+            CreateMap<Plate, PlateDto>().ReverseMap().ForMember(dest => dest.StatusId, opt => opt.MapFrom(src => (int)src.Status));;
             CreateMap<SortField, EventBus.Enums.SortField>().ReverseMap();
             CreateMap<SortDirection, EventBus.Enums.SortDirection>().ReverseMap();
             CreateMap<Domain.Enums.Status, EventBus.Enums.Status>().ReverseMap();

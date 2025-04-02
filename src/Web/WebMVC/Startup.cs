@@ -33,7 +33,6 @@ namespace RTCodingExercise.WebMVC
             services.AddScoped<IPlateQueryService, PlateQueryService>();
             services.AddScoped<IPlateCommandService, PlateCommandService>();
             services.AddScoped<ISalesCommandService, SalesCommandService>();
-            services.AddScoped<IPromotionCommandService, PromotionCommandService>();
 
 
             services.AddControllers();

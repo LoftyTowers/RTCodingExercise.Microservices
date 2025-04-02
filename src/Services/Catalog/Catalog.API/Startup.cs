@@ -40,7 +40,6 @@ namespace Catalog.API
 
             // Register Services
             services.AddScoped<IPlateService, PlateService>();
-            services.AddScoped<IPromotionService, PromotionService>();
 
 
 
@@ -73,9 +72,6 @@ namespace Catalog.API
                 //x.AddConsumer<ConsumerClass>();
                 x.AddConsumer<GetPlatesConsumer>();
                 x.AddConsumer<PlateAddedConsumer>();
-                x.AddConsumer<ApplyDiscountConsumer>();
-                x.AddConsumer<ApplyPercentOffConsumer>();
-                x.AddConsumer<GetProfitStatsConsumer>();
 
                 //ADD CONSUMERS HERE
                 x.UsingRabbitMq((context, cfg) =>

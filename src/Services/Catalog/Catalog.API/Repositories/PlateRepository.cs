@@ -106,26 +106,32 @@ namespace Catalog.API.Repositories
             }
         }
 
-        public async Task ApplyFlatDiscountAsync(decimal discountAmount)
+        public async Task SellPlateAsync(Plate plate)
         {
-            var plates = await _context.Plates.ToListAsync();
-            foreach (var plate in plates)
+            try
             {
-                plate.SalePrice -= discountAmount;
-                _context.Plates.Update(plate);
-            }
-            await _context.SaveChangesAsync();
-        }
+                var existing = await _context.Plates.FindAsync(plate.Id);
+                if (existing == null)
+                {
+                    _logger.LogWarning("SellPlateAsync: Plate not found with ID {Id}", plate.Id);
+                    return;
+                }
 
-        public async Task ApplyPercentDiscountAsync(decimal discountPercentage)
-        {
-            var plates = await _context.Plates.ToListAsync();
-            foreach (var plate in plates)
-            {
-                plate.SalePrice -= plate.SalePrice * discountPercentage;
-                _context.Plates.Update(plate);
+                existing.StatusId = plate.StatusId;
+                existing.FinalSalePrice = plate.FinalSalePrice;
+                existing.PromoCodeUsed = plate.PromoCodeUsed;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("SellPlateAsync: Updated Plate ID {Id} with status {Status} and final sale price {Price}.",
+                    existing.Id, existing.StatusId, existing.FinalSalePrice);
+                
             }
-            await _context.SaveChangesAsync();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while marking a plate as sold, ID {Id}", plate.Id);
+                throw;
+            }
         }
     }
 }

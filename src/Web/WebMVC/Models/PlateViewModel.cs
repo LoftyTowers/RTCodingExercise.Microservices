@@ -22,5 +22,19 @@ namespace RTCodingExercise.Microservices.Models
 
         [Display(Name = "Status")]
         public Status Status { get; set; }
+
+        [Display(Name = "Promo Code Used")]
+        public string? PromoCodeUsed { get; set; }
+
+        [Display(Name = "Final Sale Price")]
+        [DataType(DataType.Currency)]
+        public decimal? FinalSalePrice { get; set; }
+
+        [ScaffoldColumn(false)]
+        public decimal DisplayPrice => FinalSalePrice ?? SalePriceToDisplay ?? SalePrice;
+
+        [ScaffoldColumn(false)]
+        public decimal? SalePriceToDisplay { get; set; } // preview price in views
+
     }
 }
