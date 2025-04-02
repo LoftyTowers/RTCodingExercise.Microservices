@@ -27,34 +27,27 @@ namespace RTCodingExercise.Microservices.Controllers
             {
                 _logger.LogInformation("Sending request for plates via MassTransit.");
 
-                // Get all plates
-                var allPlates = (await _plateQueryService.GetSortedPlatesAsync(field, direction)).ToList();
+                var allPlateData = await _plateQueryService.GetSortedPlatesAsync(field, direction);
+                _logger.LogInformation($"Received {allPlateData.Plates.Count} plates from the Catalog API.");
 
-                _logger.LogInformation($"Received {allPlates.Count} plates from the Catalog API.");
-
-                // Guard against invalid pageSize
                 pageSize = pageSize <= 0 ? 20 : pageSize;
-
-                // Calculate pagination
-                var totalPlates = allPlates.Count;
+                var totalPlates = allPlateData.Plates.Count;
                 var totalPages = (int)Math.Ceiling(totalPlates / (double)pageSize);
-                page = Math.Clamp(page, 1, Math.Max(totalPages, 1)); // prevent overflow or underflow
+                page = Math.Clamp(page, 1, Math.Max(totalPages, 1));
 
-                var pagedPlates = allPlates
+                // Apply pagination to just the Plates list
+                allPlateData.Plates = allPlateData.Plates
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
 
-                _logger.LogInformation($"Displaying page {page} with page size {pageSize}.");
-
-                // Set view data
                 ViewBag.CurrentPage = page;
                 ViewBag.PageSize = pageSize;
                 ViewBag.TotalPages = totalPages;
                 ViewBag.CurrentSortField = field;
                 ViewBag.CurrentSortDirection = direction;
 
-                return View(pagedPlates);
+                return View(allPlateData);
             }
             catch (Exception ex)
             {
@@ -82,8 +75,8 @@ namespace RTCodingExercise.Microservices.Controllers
                 };
 
                 await _plateCommandService.AddPlateAsync(plate);
-
                 _logger.LogInformation("Plate added: {Plate}", plate.Registration);
+
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
@@ -94,7 +87,7 @@ namespace RTCodingExercise.Microservices.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Filter(string? query, int page = 1, int pageSize = 20)
+        public async Task<IActionResult> Filter(string? query, bool onlyAvailable = false, int page = 1, int pageSize = 20)
         {
             try
             {
@@ -107,19 +100,23 @@ namespace RTCodingExercise.Microservices.Controllers
                     return RedirectToAction("Index");
                 }
 
-                var filteredPlates = await _plateQueryService.FilterPlatesAsync(query);
+                var filteredPlateData = await _plateQueryService.FilterPlatesAsync(query, onlyAvailable);
+                var totalPlates = filteredPlateData.Plates.Count;
+                var totalPages = (int)Math.Ceiling(totalPlates / (double)pageSize);
+                page = Math.Clamp(page, 1, Math.Max(totalPages, 1));
 
-                var pagedPlates = filteredPlates
+                filteredPlateData.Plates = filteredPlateData.Plates
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
 
                 ViewBag.CurrentPage = page;
                 ViewBag.PageSize = pageSize;
-                ViewBag.TotalPages = (int)Math.Ceiling((double)Math.Max(filteredPlates.Count(), 1) / pageSize);
+                ViewBag.TotalPages = totalPages;
                 ViewBag.Query = query;
+                ViewBag.OnlyAvailable = onlyAvailable;
 
-                return View("Index", pagedPlates); // Reuse the Index view
+                return View("Index", filteredPlateData);
             }
             catch (Exception ex)
             {
@@ -148,11 +145,6 @@ namespace RTCodingExercise.Microservices.Controllers
                 field = ViewBag.CurrentSortField,
                 direction = ViewBag.CurrentSortDirection
             });
-        }
-
-        public async Task<IActionResult> ForSaleOnly()
-        {
-            return View("Index");
         }
     }
 }

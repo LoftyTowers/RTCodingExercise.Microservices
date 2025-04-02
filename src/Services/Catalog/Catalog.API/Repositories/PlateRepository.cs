@@ -17,18 +17,17 @@ namespace Catalog.API.Repositories
             }
         }
 
-        public async Task<IEnumerable<Plate>> GetPlatesAsync(SortField field, SortDirection direction, string? filter = null)
+        public async Task<IEnumerable<Plate>> GetPlatesAsync(SortField field, SortDirection direction, string? filter = null, bool? onlyAvailable = false)
         {
             try
             {
-                bool onlyAvailable = !string.IsNullOrWhiteSpace(filter);
                 _logger.LogInformation("Getting plates with sort {SortField} {SortDirection} and filter '{Filter}'", field, direction, filter);
 
                 var query = _context.Plates
                     .AsQueryable()
                     .ApplyBroadVisualFilter(filter);
 
-                if (onlyAvailable)
+                if (onlyAvailable.HasValue && onlyAvailable.Value)
                 {
                     query = query.Where(p => p.StatusId == (int)Domain.Enums.Status.Available);
 
@@ -43,11 +42,6 @@ namespace Catalog.API.Repositories
                 _logger.LogError(ex, "Failed to retrieve plates from the database.");
                 throw;
             }
-        }
-
-        public async Task<Plate?> GetPlateByIdAsync(Guid id)
-        {
-            return await _context.Plates.FindAsync(id);
         }
 
         public async Task<Plate> AddPlateAsync(Plate plate)
@@ -69,10 +63,18 @@ namespace Catalog.API.Repositories
             }
         }
 
-        public async Task<bool> UpdatePlateAsync(Plate plate)
+        public async Task UpdatePlateStatusAsync(Plate plate)
         {
-            _context.Entry(plate).State = EntityState.Modified;
-            return await _context.SaveChangesAsync() > 0;
+            try
+            {
+                _context.Entry(plate).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred updateing status of plate: {plate}.", plate.Id);
+                throw;
+            }
         }
 
         public async Task<bool> DeletePlateAsync(Guid id)
@@ -86,23 +88,22 @@ namespace Catalog.API.Repositories
 
         public async Task<ProfitStats> CalculateProfitStatsAsync()
         {
-            // var soldPlates = await _context.Plates.CountAsync(p => p.Status == "Sold");
-            // var totalPlates = await _context.Plates.CountAsync();
-
-            return new ProfitStats
+            try
             {
-                // TotalRevenue = soldPlates * 100, 
-                // AverageProfitMargin = totalPlates > 0 ? (decimal)soldPlates / totalPlates : 0
-            };
-        }
+                var soldPlates = await _context.Plates.CountAsync(p => p.StatusId == (int)Domain.Enums.Status.Sold);
+                var totalPlates = await _context.Plates.CountAsync();
 
-        public async Task UpdateStatusAsync(Plate plate)
-        {
-            //var plate = await GetPlateByIdAsync(plateId);
-            if (plate == null) throw new ArgumentNullException(nameof(plate));
-
-            //plate.Status = status;
-            await UpdatePlateAsync(plate);
+                return new ProfitStats
+                {
+                    TotalRevenue = soldPlates * 100,
+                    AverageProfitMargin = totalPlates > 0 ? (decimal)soldPlates / totalPlates : 0
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting profit from the db.");
+                throw;
+            }
         }
 
         public async Task ApplyFlatDiscountAsync(decimal discountAmount)

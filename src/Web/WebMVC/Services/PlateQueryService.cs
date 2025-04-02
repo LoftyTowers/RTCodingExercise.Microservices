@@ -24,20 +24,20 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             _logger = logger;
         }
 
-        private List<PlateViewModel> MapPlates(Response<PlatesRetrievedEvent> response)
+        private PlateDataViewModel MapPlates(Response<PlatesRetrievedEvent> response)
         {
             if (response.Message.Plates == null || !response.Message.Plates.Any())
             {
                 _logger.LogWarning("No plates found in the response.");
-                return new List<PlateViewModel>();
+                return new PlateDataViewModel();
             }
 
-            var plates = _mapper.Map<List<PlateViewModel>>(response.Message.Plates);
-            _logger.LogInformation($"Mapped {plates.Count} plates successfully.");
-            return plates;
+            var plateData = _mapper.Map<PlateDataViewModel>(response.Message.Plates);
+            _logger.LogInformation($"Mapped {plateData.Plates.Count} plates successfully.");
+            return plateData;
         }
 
-        public async Task<IEnumerable<PlateViewModel>> GetSortedPlatesAsync(SortField field, SortDirection direction)
+        public async Task<PlateDataViewModel> GetSortedPlatesAsync(SortField field, SortDirection direction)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             }
         }
 
-        public async Task<IEnumerable<PlateViewModel>> FilterPlatesAsync(string filter)
+        public async Task<PlateDataViewModel> FilterPlatesAsync(string filter, bool onlyAvailable)
         {
             try
             {
@@ -67,6 +67,7 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
                 var response = await _client.GetResponse<PlatesRetrievedEvent>(new GetPlatesEvent
                 {
                     Filter = filter,
+                    OnlyAvailable = onlyAvailable,
                     CorrelationId = Guid.NewGuid()
                 });
                 return MapPlates(response);

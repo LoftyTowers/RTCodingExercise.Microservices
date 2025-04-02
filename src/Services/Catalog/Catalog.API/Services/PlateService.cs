@@ -20,19 +20,25 @@ namespace Catalog.API.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<PlateDto>> GetPlatesAsync(SortField field, SortDirection dir, string? filter = null)
+        public async Task<PlateDataDto> GetPlatesAsync(SortField field, SortDirection dir, string? filter = null, bool? onlyAvailable = false)
         {
             try
             {
-                var plates = await _plateRepository.GetPlatesAsync(field, dir, filter);
+                var plates = await _plateRepository.GetPlatesAsync(field, dir, filter, onlyAvailable);
 
                 if (plates == null || !plates.Any())
                 {
                     _logger.LogWarning("No plates found in the repository.");
                 }
 
-                var plateDtos = _mapper.Map<List<PlateDto>>(plates);
-                return plateDtos;
+                var profitStats = await _plateRepository.CalculateProfitStatsAsync();
+
+                return new PlateDataDto()
+                {
+                    Plates = _mapper.Map<List<PlateDto>>(plates),
+                    AverageProfitMargin = profitStats.AverageProfitMargin,
+                    TotalRevenue = profitStats.TotalRevenue
+                };
             }
             catch (Exception ex)
             {
@@ -63,7 +69,7 @@ namespace Catalog.API.Services
         {
             try
             {
-                await _plateRepository.UpdateStatusAsync(plate);
+                await _plateRepository.UpdatePlateStatusAsync(plate);
                 //await _auditRepository.LogAsync(plate, "Reserved");
                 _logger.LogInformation("Plate {PlateId} reserved successfully.", plate);
             }
