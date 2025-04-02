@@ -24,7 +24,7 @@ namespace RTCodingExercise.Microservices.WebMVC.Services
             try
             {
                 var dto = _mapper.Map<PlateDto>(plate);
-                var @event = new SellPlateEvent(dto);
+                var @event = new SellPlateEvent(dto, Guid.NewGuid());
 
                 _logger.LogInformation("Publishing SellPlateEvent for plate {Id} with final sale price {Price} and promo code {Promo}.", dto.Id, dto.FinalSalePrice, dto.PromoCodeUsed);
 

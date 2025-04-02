@@ -8,9 +8,9 @@ namespace Catalog.UnitTests.Helpers
     public class PlateVisualMatcherTests
     {
         [Theory]
-        [InlineData("James", "[J][A4][M][E3][S5]")]
-        [InlineData("BOLT", "[B8][O0][L][T7]")]
-        [InlineData("GIZMO", "[G69][I1][Z2][M][O0]")]
+        [InlineData("James", "J[A4]M[E3][S5]")]
+        [InlineData("BOLT", "[B8][O0]L[T7]")]
+        [InlineData("GIZMO", "[G69][I1][Z2]M[O0]")]
         public void ToRegexPattern_CreatesExpectedPattern(string input, string expected)
         {
             var result = PlateVisualMatcher.ToRegexPattern(input);
@@ -21,7 +21,7 @@ namespace Catalog.UnitTests.Helpers
         public void ToRegexPattern_SkipsSymbols()
         {
             var result = PlateVisualMatcher.ToRegexPattern("JA-ME$");
-            Assert.Equal("[J][A4][M][E3]", result);
+            Assert.Equal("J[A4]M[E3]", result);
         }
 
         [Fact]

@@ -6,9 +6,10 @@ namespace RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEven
     {
         public PlateDto Plate { get; set; }
 
-        public SellPlateEvent(PlateDto plate) : base()
+        public SellPlateEvent(PlateDto plate, Guid correlationId) : base()
         {
             Plate = plate;
+            CorrelationId = correlationId;
         }
     }
 }

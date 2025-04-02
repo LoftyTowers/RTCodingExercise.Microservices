@@ -47,15 +47,26 @@ namespace Catalog.API.UnitTests.Services
                 new Plate { Registration = "ABC123" }
             };
 
+            var profitStats = new ProfitStats
+            {
+                AverageProfitMargin = 100,
+                TotalRevenue = 150
+            };
+
             _plateRepositoryMock
-                .Setup(repo => repo.GetPlatesAsync(It.IsAny<SortField>(), It.IsAny<SortDirection>(), null))
+                .Setup(repo => repo.GetPlatesAsync(It.IsAny<SortField>(), It.IsAny<SortDirection>(), null, false))
                 .ReturnsAsync(plates);
+
+            _plateRepositoryMock
+                .Setup(repo => repo.CalculateProfitStatsAsync())
+                .ReturnsAsync(profitStats);
 
             var result = await _plateService.GetPlatesAsync(SortField.Registration, SortDirection.Ascending, null);
 
             Assert.NotNull(result);
-            Assert.Single(result);
-            Assert.Equal("ABC123", result.ToList().FirstOrDefault()?.Registration);
+            Assert.NotNull(result.Plates);
+            Assert.Single(result.Plates);
+            Assert.Equal("ABC123", result.Plates.ToList().FirstOrDefault()?.Registration);
         }
 
         // Test: AddPlateAsync_Should_CallRepository_When_ValidPlateDto

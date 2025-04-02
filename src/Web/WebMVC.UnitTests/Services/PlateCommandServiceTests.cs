@@ -9,6 +9,8 @@ using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.Models;
 using System;
 using System.Threading.Tasks;
+using WebMVC.Enums;
+using System.Data;
 
 namespace WebMVC.UnitTests.Services
 {
@@ -99,31 +101,30 @@ namespace WebMVC.UnitTests.Services
         public async Task ToggleReservationAsync_Should_ToggleAndPublishEvent_When_ValidPlateProvided()
         {
             // Arrange
-            var originalIsReserved = false;
             var plate = new PlateViewModel
             {
                 Id = Guid.NewGuid(),
                 Registration = "TEST123",
-                IsReserved = originalIsReserved
+                Status = Status.Reserved
             };
 
             var expectedDto = new PlateDto
             {
                 Id = plate.Id,
                 Registration = plate.Registration,
-                IsReserved = !originalIsReserved // should be flipped
+                Status = EventBus.Enums.Status.Reserved
             };
 
             _mockMapper.Setup(m => m.Map<PlateDto>(It.IsAny<PlateViewModel>()))
                        .Returns(expectedDto);
 
             // Act
-            await _service.ToggleReservationAsync(plate);
+            await _service.UpdateStatusAsync(plate);
 
             // Assert
-            _mockPublisher.Verify(p => p.Publish(It.Is<PlateReserveToggleEvent>(e =>
+            _mockPublisher.Verify(p => p.Publish(It.Is<PlateStatusUpdateEvent>(e =>
                 e.Plate.Id == expectedDto.Id &&
-                e.Plate.IsReserved == expectedDto.IsReserved
+                e.Plate.Status == expectedDto.Status
             ), default), Times.Once);
         }
 
@@ -131,16 +132,16 @@ namespace WebMVC.UnitTests.Services
         public async Task ToggleReservationAsync_Should_ThrowApplicationException_When_TimeoutOccurs()
         {
             // Arrange
-            var plate = new PlateViewModel { Id = Guid.NewGuid(), Registration = "TIMEOUT", IsReserved = false };
-            var dto = new PlateDto { Id = plate.Id, Registration = "TIMEOUT", IsReserved = true };
+            var plate = new PlateViewModel { Id = Guid.NewGuid(), Registration = "TIMEOUT", Status = Status.Reserved };
+            var dto = new PlateDto { Id = plate.Id, Registration = "TIMEOUT", Status = EventBus.Enums.Status.Reserved };
 
             _mockMapper.Setup(m => m.Map<PlateDto>(plate)).Returns(dto);
             _mockPublisher
-                .Setup(p => p.Publish(It.IsAny<PlateReserveToggleEvent>(), default))
+                .Setup(p => p.Publish(It.IsAny<PlateStatusUpdateEvent>(), default))
                 .ThrowsAsync(new RequestTimeoutException("Timeout"));
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<ApplicationException>(() => _service.ToggleReservationAsync(plate));
+            var ex = await Assert.ThrowsAsync<ApplicationException>(() => _service.UpdateStatusAsync(plate));
             Assert.Contains("did not respond in time", ex.Message);
         }
 
@@ -148,16 +149,16 @@ namespace WebMVC.UnitTests.Services
         public async Task ToggleReservationAsync_Should_ThrowApplicationException_When_PublishFails()
         {
             // Arrange
-            var plate = new PlateViewModel { Id = Guid.NewGuid(), Registration = "FAIL", IsReserved = false };
-            var dto = new PlateDto { Id = plate.Id, Registration = "FAIL", IsReserved = true };
+            var plate = new PlateViewModel { Id = Guid.NewGuid(), Registration = "FAIL", Status = Status.Reserved };
+            var dto = new PlateDto { Id = plate.Id, Registration = "FAIL", Status = EventBus.Enums.Status.Reserved };
 
             _mockMapper.Setup(m => m.Map<PlateDto>(plate)).Returns(dto);
             _mockPublisher
-                .Setup(p => p.Publish(It.IsAny<PlateReserveToggleEvent>(), default))
+                .Setup(p => p.Publish(It.IsAny<PlateStatusUpdateEvent>(), default))
                 .ThrowsAsync(new Exception("Unhandled"));
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<ApplicationException>(() => _service.ToggleReservationAsync(plate));
+            var ex = await Assert.ThrowsAsync<ApplicationException>(() => _service.UpdateStatusAsync(plate));
             Assert.Contains("An error occurred while processing your request", ex.Message);
         }
     }

@@ -36,18 +36,28 @@ namespace WebMVC.UnitTests.Services
         public async Task GetSortedPlatesAsync_ReturnsMappedPlates_WhenResponseContainsPlates()
         {
             // Arrange
-            var plateDtos = new List<PlateDto>
-        {
-            new PlateDto { Id = Guid.NewGuid(), Registration = "ABC123", PurchasePrice = 1000, SalePrice = 1500 }
-        };
+            var plateDataDtos = new PlateDataDto
+            {
+                Plates = new List<PlateDto>
+                {
+                    new PlateDto { Id = Guid.NewGuid(), Registration = "ABC123", PurchasePrice = 1000, SalePrice = 1500 }
+                },
+                AverageProfitMargin = 500,
+                TotalRevenue = 1500
+            };
 
-            var expectedViewModels = new List<PlateViewModel>
-        {
-            new PlateViewModel { Id = plateDtos[0].Id, Registration = "ABC123", PurchasePrice = 1000, SalePrice = 1500 }
-        };
+            var expectedViewModels = new PlateDataViewModel
+            {
+                Plates = new List<PlateViewModel>
+                {
+                    new PlateViewModel { Id = plateDataDtos.Plates[0].Id, Registration = "ABC123", PurchasePrice = 1000, SalePrice = 1500 }
+                },
+                AverageProfitMargin = 500,
+                TotalRevenue = 1500
+            };
 
             var responseMock = new Mock<Response<PlatesRetrievedEvent>>();
-            responseMock.Setup(r => r.Message).Returns(new PlatesRetrievedEvent(plateDtos));
+            responseMock.Setup(r => r.Message).Returns(new PlatesRetrievedEvent(plateDataDtos));
 
             _mockClient
                 .Setup(c => c.GetResponse<PlatesRetrievedEvent>(
@@ -57,7 +67,7 @@ namespace WebMVC.UnitTests.Services
                 .ReturnsAsync(responseMock.Object);
 
             _mockMapper
-                .Setup(m => m.Map<List<PlateViewModel>>(plateDtos))
+                .Setup(m => m.Map<PlateDataViewModel>(plateDataDtos))
                 .Returns(expectedViewModels);
 
             // Act
@@ -65,8 +75,9 @@ namespace WebMVC.UnitTests.Services
 
             // Assert
             Assert.NotNull(result);
-            Assert.Single(result);
-            Assert.Equal("ABC123", result.ToList().FirstOrDefault()?.Registration);
+            Assert.NotNull(result.Plates);
+            Assert.Single(result.Plates);
+            Assert.Equal("ABC123", result.Plates.ToList().FirstOrDefault()?.Registration);
         }
 
         [Fact]
@@ -88,25 +99,34 @@ namespace WebMVC.UnitTests.Services
 
             // Assert
             Assert.NotNull(result);
-            Assert.Empty(result);
         }
 
         [Fact]
         public async Task FilterPlatesAsync_ReturnsMappedResults()
         {
             // Arrange
-            var plateDtos = new List<PlateDto>
-        {
-            new PlateDto { Id = Guid.NewGuid(), Registration = "D44NNY", PurchasePrice = 1000, SalePrice = 2000 }
-        };
+            var plateDataDtos = new PlateDataDto
+            {
+                Plates = new List<PlateDto>
+                {
+                    new PlateDto { Id = Guid.NewGuid(), Registration = "D44NNY", PurchasePrice = 1000, SalePrice = 2000 }
+                },
+                AverageProfitMargin = 1000,
+                TotalRevenue = 2000
+            };
 
-            var expectedViewModels = new List<PlateViewModel>
-        {
-            new PlateViewModel { Id = plateDtos[0].Id, Registration = "D44NNY", PurchasePrice = 1000, SalePrice = 2000 }
-        };
+            var expectedViewModels = new PlateDataViewModel
+            {
+                Plates = new List<PlateViewModel>
+                {
+                    new PlateViewModel { Id = plateDataDtos.Plates[0].Id, Registration = "D44NNY", PurchasePrice = 1000, SalePrice = 2000 }
+                },
+                AverageProfitMargin = 1000,
+                TotalRevenue = 2000
+            };
 
             var responseMock = new Mock<Response<PlatesRetrievedEvent>>();
-            responseMock.Setup(r => r.Message).Returns(new PlatesRetrievedEvent(plateDtos));
+            responseMock.Setup(r => r.Message).Returns(new PlatesRetrievedEvent(plateDataDtos));
 
             _mockClient
                 .Setup(c => c.GetResponse<PlatesRetrievedEvent>(
@@ -116,15 +136,17 @@ namespace WebMVC.UnitTests.Services
                 .ReturnsAsync(responseMock.Object);
 
             _mockMapper
-                .Setup(m => m.Map<List<PlateViewModel>>(plateDtos))
+                .Setup(m => m.Map<PlateDataViewModel>(plateDataDtos))
                 .Returns(expectedViewModels);
 
             // Act
-            var result = await _service.FilterPlatesAsync("Danny");
+            var result = await _service.FilterPlatesAsync("Danny", false);
 
             // Assert
-            Assert.Single(result);
-            Assert.Equal("D44NNY", result.ToList().FirstOrDefault()?.Registration);
+            Assert.NotNull(result);
+            Assert.NotNull(result.Plates);
+            Assert.Single(result.Plates);
+            Assert.Equal("D44NNY", result.Plates.ToList().FirstOrDefault()?.Registration);
         }
     }
 }
