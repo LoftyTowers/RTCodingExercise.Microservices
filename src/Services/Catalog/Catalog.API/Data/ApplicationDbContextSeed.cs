@@ -30,10 +30,12 @@ namespace Catalog.API.Data
         {
             try
             {
-                var plates = ReadApplicationRoleFromJson(env.ContentRootPath, logger);
-
-                await context.Plates.AddRangeAsync(plates);
-                await context.SaveChangesAsync();
+                if (!context.Plates.Any())
+{
+                    var plates = ReadApplicationRoleFromJson(env.ContentRootPath, logger);
+                    await context.Plates.AddRangeAsync(plates);
+                    await context.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {

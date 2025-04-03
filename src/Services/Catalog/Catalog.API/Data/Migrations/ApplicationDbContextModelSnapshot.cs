@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Catalog.API.Migrations
+namespace Catalog.API.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -22,30 +22,140 @@ namespace Catalog.API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("Catalog.Domain.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("PlateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlateId");
+
+                    b.ToTable("AuditLogs", (string)null);
+                });
+
             modelBuilder.Entity("Catalog.Domain.Plate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal?>("FinalSalePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Letters")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<int>("Numbers")
                         .HasColumnType("int");
 
+                    b.Property<string>("PromoCodeUsed")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<decimal>("PurchasePrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Registration")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<decimal>("SalePrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("StatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(10);
 
                     b.HasKey("Id");
 
-                    b.ToTable("Plates");
+                    b.HasIndex("StatusId");
+
+                    b.ToTable("Plates", (string)null);
+                });
+
+            modelBuilder.Entity("Catalog.Domain.Status", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Statuses", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 10,
+                            Name = "Available"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Name = "Reserved"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Name = "Sold"
+                        });
+                });
+
+            modelBuilder.Entity("Catalog.Domain.AuditLog", b =>
+                {
+                    b.HasOne("Catalog.Domain.Plate", "Plate")
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("PlateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Plate");
+                });
+
+            modelBuilder.Entity("Catalog.Domain.Plate", b =>
+                {
+                    b.HasOne("Catalog.Domain.Status", "Status")
+                        .WithMany("Plates")
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Status");
+                });
+
+            modelBuilder.Entity("Catalog.Domain.Plate", b =>
+                {
+                    b.Navigation("AuditLogs");
+                });
+
+            modelBuilder.Entity("Catalog.Domain.Status", b =>
+                {
+                    b.Navigation("Plates");
                 });
 #pragma warning restore 612, 618
         }

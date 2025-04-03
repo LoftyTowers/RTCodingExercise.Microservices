@@ -1,0 +1,118 @@
+@model RTCodingExercise.Microservices.Models.PlateDataViewModel
+
+@{
+    // Pagination state
+    int currentPage = ViewBag.CurrentPage is int cp ? cp : 1;
+    int totalPages = ViewBag.TotalPages is int tp ? tp : 1;
+    int pageSize = ViewBag.PageSize is int size ? size : 20;
+
+    int startPage = Math.Max(1, currentPage - 2);
+    int endPage = Math.Min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) startPage = Math.Max(1, endPage - 4);
+
+    // Sort state
+    WebMVC.Enums.SortField currentField = ViewBag.CurrentSortField ?? WebMVC.Enums.SortField.None;
+    WebMVC.Enums.SortDirection currentDirection = ViewBag.CurrentSortDirection ?? WebMVC.Enums.SortDirection.Ascending;
+
+    Func<WebMVC.Enums.SortField, WebMVC.Enums.SortDirection> nextDirection = field =>
+        field == currentField && currentDirection == WebMVC.Enums.SortDirection.Ascending
+            ? WebMVC.Enums.SortDirection.Descending
+            : WebMVC.Enums.SortDirection.Ascending;
+}
+
+<!-- Add Bootstrap Icons if not already included -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+@if (Model != null)
+{
+    <div class="alert alert-success mt-3">
+        <strong>Total Revenue:</strong> @Model.TotalRevenue.ToString("C")<br />
+        <strong>Average Profit Margin:</strong> @Model.AverageProfitMargin.ToString("P1")
+    </div>
+}
+
+<h3 class="mt-5 mb-3">Add Plate</h3>
+<hr />
+<form asp-action="AddPlate" method="post" class="row g-3 align-items-end">
+    <div class="col-md-4">
+        <label class="form-label" for="plateInput">Plate Number:</label>
+        <input id="plateInput" type="text" name="Registration" class="form-control" required />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label" for="priceInput">Purchase Price (£):</label>
+        <input id="priceInput" type="number" name="PurchasePrice" class="form-control" step="0.01" required />
+    </div>
+    <div class="col-md-4">
+        <button type="submit" class="btn btn-primary">Add Plate</button>
+    </div>
+</form>
+<h4 class="mt-4 mb-2">Search Plates</h4>
+@if (TempData["FilterError"] != null)
+{
+    <div class="alert alert-warning" role="alert">
+        @TempData["FilterError"]
+    </div>
+}
+<form method="get" asp-action="Filter" class="row g-3 align-items-end mb-4">
+    <div class="col-md-5">
+        <label for="query" class="form-label">Enter plate, letters or numbers</label>
+        <input type="text" id="query" name="query" class="form-control" placeholder="e.g. AB1" value="@ViewBag.Query" />
+    </div>
+
+    <div class="col-md-2">
+        <div class="form-check mt-4">
+            <input class="form-check-input" type="checkbox" name="onlyAvailable" id="onlyAvailable" value="true" @(ViewBag.OnlyAvailable == true ? "checked" : "") />
+            <label class="form-check-label" for="onlyAvailable">Only show available</label>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label d-block invisible">Search</label>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label d-block invisible">Reset</label>
+        <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Plates")">Reset</a>
+    </div>
+</form>
+<hr />
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+<h2 class="mt-4 mb-3">Available Plates</h2>
+<p class="text-muted fst-italic">Tip: Click on a column heading to sort the plates.</p>
+
+@await Html.PartialAsync("_PlatesTable", Model)
+
+<script>
+    function handleStatusChange(select) {
+        const form = select.closest('form');
+        const selectedStatus = parseInt(select.value);
+        const originalStatus = select.getAttribute("data-original-status");
+
+        if (selectedStatus === 30) { // Sold
+            const promoCode = prompt("Enter promo code if you have one:");
+            if (promoCode !== null) {
+                form.action = "/Sales/SellPlate";
+                let promoInput = form.querySelector("input[name='promoCode']");
+                if (!promoInput) {
+                    promoInput = document.createElement("input");
+                    promoInput.type = "hidden";
+                    promoInput.name = "promoCode";
+                    form.appendChild(promoInput);
+                }
+                promoInput.value = promoCode;
+                form.submit();
+            } else {
+                select.value = originalStatus;
+            }
+        } else {
+            form.action = "/Plates/UpdateStatus";
+            form.submit();
+        }
+    }
+</script>

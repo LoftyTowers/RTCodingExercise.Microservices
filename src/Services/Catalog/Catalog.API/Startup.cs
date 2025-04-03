@@ -1,6 +1,9 @@
 ﻿using MassTransit;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
+using Catalog.API.Repositories;
+using Catalog.API.Consumers;
+using Catalog.API.Services;
 
 namespace Catalog.API
 {
@@ -16,6 +19,11 @@ namespace Catalog.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutoMapper(cfg =>
+            {
+                cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies());
+            });
+
             // Add framework services.
             services.AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(Configuration["ConnectionString"],
@@ -25,6 +33,15 @@ namespace Catalog.API
                         //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
+
+            // Register Repositories
+            services.AddScoped<IPlateRepository, PlateRepository>();
+            services.AddScoped<IAuditRepository, AuditRepository>();
+
+            // Register Services
+            services.AddScoped<IPlateService, PlateService>();
+
+
 
             services.AddSwaggerGen(options =>
             {
@@ -53,6 +70,10 @@ namespace Catalog.API
             services.AddMassTransit(x =>
             {
                 //x.AddConsumer<ConsumerClass>();
+                x.AddConsumer<GetPlatesConsumer>();
+                x.AddConsumer<PlateAddedConsumer>();
+                x.AddConsumer<PlateStatusUpdateConsumer>();
+                x.AddConsumer<SellPlateConsumer>();
 
                 //ADD CONSUMERS HERE
                 x.UsingRabbitMq((context, cfg) =>
