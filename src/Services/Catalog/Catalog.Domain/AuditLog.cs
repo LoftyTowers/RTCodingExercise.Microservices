@@ -1,15 +1,15 @@
-// namespace Catalog.Domain
-// {
-//     public class AuditLog
-//     {
-//         public int Id { get; set; }
+namespace Catalog.Domain
+{
+    public class AuditLog
+    {
+        public int Id { get; set; }
 
-//         public Guid PlateId { get; set; }
+        public Guid PlateId { get; set; } // FK
 
-//         public Plate Plate { get; set; } // Navigation property
+        public Plate Plate { get; set; } // Navigation property
 
-//         public string Action { get; set; }
+        public string Action { get; set; }
 
-//         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-//     }
-// }
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    }
+}
