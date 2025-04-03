@@ -11,7 +11,7 @@ Thank you for reviewing my submission. Below is a brief summary of the assumptio
   I opted to avoid front-end filtering/sorting using JavaScript or libraries, as I wasn’t sure how performant that would be on large datasets. Instead, I chose server-side postbacks for better control and predictability.
 
 - **Single view structure**  
-  Everything was kept on a single view for simplicity and to demonstrate the core functionality clearly. In a production environment, this would be broken down into partial views that could communicate with one another as needed.
+  Everything was kept in a single view, with the table and pagination in a partial view for simplicity and to demonstrate the core functionality clearly. In a production environment, this would be broken down into partial views that could communicate with one another as needed.
 
 - **Filtering implementation**  
   For filtering, I created a helper class in the repository layer to apply pattern matching in memory. I now realise this wasn’t ideal – name filtering didn’t work correctly due to lack of matches, and a stored procedure with SQL regex or `LIKE` would’ve been more suitable.
