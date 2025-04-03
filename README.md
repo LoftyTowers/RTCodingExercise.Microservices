@@ -1,64 +1,68 @@
-# Microservices Application Template
+# Notes on Assumptions and Areas for Improvement
 
-If you have found your way here, you have more than likely been asked by Regtransfers Ltd to complete a Coding Exercise as a part of your interview process. 
+Thank you for reviewing my submission. Below is a brief summary of the assumptions I made while working through the exercise, followed by some areas I would approach differently or expand upon with more time.
 
-It’s great that you are eager to join our team. To make your life a bit easier we have provided you with a basic boilerplate project. 
+## Assumptions
 
-## Forking
-Please fork this project into your own github repository, this repository has been locked and cannot be committed to.
+- **Intended audience**  
+  I assumed this interface was designed for internal use – either for customer service or admin teams – rather than being a public-facing site. The level of detail shown (e.g. pricing, internal metadata) would typically be hidden from end users. In a live system, I’d expect some form of login or user roles to manage this.
 
-## WebMVC Project
+- **Front-end performance concerns**  
+  I opted to avoid front-end filtering/sorting using JavaScript or libraries, as I wasn’t sure how performant that would be on large datasets. Instead, I chose server-side postbacks for better control and predictability.
 
-ASP.NET Core 6.0.1 Web App (Model-View-Controller).
+- **Single view structure**  
+  Everything was kept on a single view for simplicity and to demonstrate the core functionality clearly. In a production environment, this would be broken down into partial views that could communicate with one another as needed.
 
-For ease of use, Startup.cs has been created and initiated in the Program.cs. RazorRuntimeCompilation has also been enabled, 
+- **Filtering implementation**  
+  For filtering, I created a helper class in the repository layer to apply pattern matching in memory. I now realise this wasn’t ideal – name filtering didn’t work correctly due to lack of matches, and a stored procedure with SQL regex or `LIKE` would’ve been more suitable.
 
-## Catalog.API Project
+- **Discount functionality misread**  
+  I initially imagined the discount code being part of the payment flow rather than the filter – this was a misread of the user story on my part.
 
-ASP.NET Core 6.0.1 Web API
+- **Event structure**  
+  Integration events are currently stored flat in the EventBus project. In future, I would separate them into `Commands`, `Queries`, and `Responses` to make them easier to manage.
 
-For ease of use, Startup.cs has been created and initiated in the Program.cs.
+- **VAT and revenue calculations**  
+  I estimated the logic around VAT and profit calculations. In a real project, I would speak to the business owner or product manager to clarify exactly what’s required before implementing.
 
-- ApplicationDbContext inside the data folder is your Entity Framework Code First DatabaseContext.
-- CodeFirst Migrations are enabled, any changes you make to the database can be implemented with 
-  `Add-Migration` or `dotnet ef migrations add`
-- ApplicationDbContextFactory enables these migrations to work
-- ApplicationDbContextSeed seeds the DbContext with sample data, if you wish you can update this with more
+## Improvements I Would Make
 
-## Catalog.Domain
-This contains the domain objects for the Catalog.API, the Plate class has been generated for you here.
+Given more time and a live environment, here are the key areas I would improve or approach differently:
 
-## BuildingBlocks
-### EventBus
-If you wish to utilise an event bus, we have preinstalled MassTransit for you and RabbitMQ is running in the background. IntegrationsEvents is a handy place to store your Message definitions, we have provided a base class called IntegrationEvent in which your message templates can inherit from.
-The RabbitMQ control panel can be accessed on http://localhost:15672 username:guest & password:guest
-More information on MassTransit can be found at: https://masstransit-project.com/
+### Architecture and Data Flow
 
-### WebHost
-WebHostExtention enables code first migrations to be run when the project starts, this can be reused if you wish.
+- **API-side filtering, sorting, and pagination**  
+  These are currently handled in WebMVC after the full dataset is loaded. It would be more efficient to push this logic into the Catalog.API, especially at scale.
 
-## Database
-The database is a SQLServer 19 instance running in a docker container
+- **Only fetch what’s needed**  
+  I would avoid passing the full ViewModel back and forth. Instead, I’d split responsibilities and retrieve just the data needed for each action.
 
-The database should automatically create and seed itself thanks to some fancy boilerplate code.
-Database: RTCodingExercise.Services.CatalogDb
-Connection: Server=sqldata;Database=RTCodingExercise.Services.CatalogDb;User Id=sa;Password=Pass@word
+- **More graceful error handling**  
+  At present, errors are thrown directly from catch blocks for visibility during testing. In production, I would handle these more gracefully and provide helpful user feedback.
 
-you can connect to it via VisualStudio by adding it under the ServerExplorer DataConnections referencing `localhost,5433` as the server and choosing RTCodingExercise.Services.CatalogDb from the Database dropdown list, connecting with sql authentication with the username:sa & password:Pass@word or the same way through SQLServerManagementStudio
+- **Better organisation of components**  
+  Partial views would be introduced to split the plate list, filters, and statistics into more modular, maintainable components.
 
-## Unit Tests
-A xUnit test project has been added for Catalog.API under the tests folder called Catalog.UnitTests, and the Catalog.API and Catalog.Domain projects has been referenced.
+- **Cleaner controller structure**  
+  I would move the pagination and sorting logic out of the MVC controller and into services or helper classes to keep things focused.
 
-A xUnit test project has been added for WebMVC under the tests folder called WebMVC.UnitTests, and the WebMVC and Catalog.Domain projects has been referenced.
+- **External configuration for constants**  
+  Values like `pageSize = 20` are currently hardcoded but should ideally come from configuration.
+  
+- **More XML comments and documentation**
+  I would add XML doc comments throughout the codebase to improve maintainability and support future developers in understanding intent and usage.
 
-If you add more Microservice projects, please follow the pattern and add a UnitTests project also. You are not restricted to using xUnit if you would prefer to use nUnit feel free to replace the test project with one of your choosing.
+### Validation and Testing
 
-## Submitting
-Please contact your Recruitment agency or us directly with a link to your forked repository.
+- **Stronger plate validation**  
+  I’d include rules such as a maximum of 8 characters, no symbols, and restrictions on the number of letters and numbers (e.g. no more than 3 numbers, 4 letters). I left this intentionally light as I wasn’t sure of the real-world constraints.
 
-Good Luck.
+- **More comprehensive unit tests**  
+  I would add more targeted tests using mocked data, including tests that simulate exceptions and unusual edge cases to ensure robustness.
 
+- **Clarify calculations with stakeholders**  
+  Any future work on revenue and VAT logic would be clarified with product owners or business stakeholders to ensure accuracy.
 
+---
 
-
-
+Thanks again for the opportunity to complete this test. I’ve aimed to demonstrate not just a working solution, but also how I reflect on and iterate my work.
