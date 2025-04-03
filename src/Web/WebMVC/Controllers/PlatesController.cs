@@ -9,15 +9,13 @@ namespace RTCodingExercise.Microservices.Controllers
         #region Fields
 
         private readonly IPlateQueryService _plateQueryService;
-        private readonly IPlateCommandService _plateCommandService;
         private readonly ILogger<PlatesController> _logger;
 
         #endregion
 
-        public PlatesController(IPlateQueryService plateQueryService, IPlateCommandService plateCommandService, ILogger<PlatesController> logger)
+        public PlatesController(IPlateQueryService plateQueryService, ILogger<PlatesController> logger)
         {
             _plateQueryService = plateQueryService;
-            _plateCommandService = plateCommandService;
             _logger = logger;
         }
 
@@ -64,7 +62,7 @@ namespace RTCodingExercise.Microservices.Controllers
                 if (string.IsNullOrEmpty(registration) || purchasePrice <= 0)
                 {
                     ModelState.AddModelError("", "Invalid input data.");
-                    return RedirectToAction("Index");
+                    return await Index(); // fallback to existing index logic
                 }
 
                 var plate = new PlateViewModel
@@ -74,10 +72,10 @@ namespace RTCodingExercise.Microservices.Controllers
                     SalePrice = purchasePrice * 1.2m
                 };
 
-                await _plateCommandService.AddPlateAsync(plate);
+                var updatedModel = await _plateQueryService.AddPlateAsync(plate);
                 _logger.LogInformation("Plate added: {Plate}", plate.Registration);
 
-                return RedirectToAction("Index");
+                return View("Index", updatedModel); // ✅ Return the view with updated model directly
             }
             catch (Exception ex)
             {
@@ -87,7 +85,7 @@ namespace RTCodingExercise.Microservices.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Filter(string? query, bool onlyAvailable = false, int page = 1, int pageSize = 20)
+        public async Task<IActionResult> Filter(string? query, bool onlyAvailable = false, int page = 1, int pageSize = 20, SortField field = SortField.None, SortDirection direction = SortDirection.Ascending)
         {
             try
             {
@@ -101,20 +99,29 @@ namespace RTCodingExercise.Microservices.Controllers
                 }
 
                 var filteredPlateData = await _plateQueryService.FilterPlatesAsync(query, onlyAvailable);
+
+                // Apply sorting
+                filteredPlateData.Plates = direction == SortDirection.Ascending
+                    ? filteredPlateData.Plates.OrderBy(p => GetSortValue(p, field)).ToList()
+                    : filteredPlateData.Plates.OrderByDescending(p => GetSortValue(p, field)).ToList();
+
+                // Pagination
                 var totalPlates = filteredPlateData.Plates.Count;
                 var totalPages = (int)Math.Ceiling(totalPlates / (double)pageSize);
                 page = Math.Clamp(page, 1, Math.Max(totalPages, 1));
-
                 filteredPlateData.Plates = filteredPlateData.Plates
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
 
+                // ViewBag for persistence
                 ViewBag.CurrentPage = page;
                 ViewBag.PageSize = pageSize;
                 ViewBag.TotalPages = totalPages;
                 ViewBag.Query = query;
                 ViewBag.OnlyAvailable = onlyAvailable;
+                ViewBag.CurrentSortField = field;
+                ViewBag.CurrentSortDirection = direction;
 
                 return View("Index", filteredPlateData);
             }
@@ -124,27 +131,43 @@ namespace RTCodingExercise.Microservices.Controllers
                 return RedirectToAction("Error", "Home");
             }
         }
-
         [HttpPost]
         public async Task<IActionResult> UpdateStatus(PlateViewModel plate)
         {
             try
             {
-                await _plateCommandService.UpdateStatusAsync(plate);
+                // Normalize values
+                if (plate.FinalSalePrice.HasValue)
+                {
+                    plate.FinalSalePrice = null;
+                }
+
+                if (!string.IsNullOrWhiteSpace(plate.PromoCodeUsed))
+                {
+                    plate.PromoCodeUsed = null;
+                }
+
+                var updatedModel = await _plateQueryService.UpdateStatusAsync(plate);
+                return View("Index", updatedModel); // ✅ Renders updated page
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to toggle reservation for plate ID: {Id}", plate?.Id);
                 TempData["ErrorMessage"] = "Could not update reservation status. Please try again.";
+                return RedirectToAction("Error", "Home");
             }
+        }
 
-            return RedirectToAction("Index", new
+
+        private object? GetSortValue(PlateViewModel plate, SortField field)
+        {
+            return field switch
             {
-                page = ViewBag.CurrentPage,
-                pageSize = ViewBag.PageSize,
-                field = ViewBag.CurrentSortField,
-                direction = ViewBag.CurrentSortDirection
-            });
+                SortField.Registration => plate.Registration,
+                SortField.PurchasePrice => plate.PurchasePrice,
+                SortField.SalePrice => plate.SalePrice,
+                _ => null
+            };
         }
     }
 }

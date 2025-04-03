@@ -67,6 +67,7 @@ namespace Catalog.API.Repositories
         {
             try
             {
+                _logger.LogDebug($"Plate promo code: {plate.PromoCodeUsed}, Plate final sales price: {plate.FinalSalePrice}, plate statusId: {plate.StatusId}");
                 _context.Entry(plate).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }

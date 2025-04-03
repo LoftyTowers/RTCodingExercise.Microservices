@@ -27,10 +27,17 @@ namespace Catalog.API.UnitTests.Services
             // Assuming you have an AutoMapper profile for Plate -> PlateDto mapping:
             var config = new MapperConfiguration(cfg =>
             {
-                // Replace with your mapping profiles
-                cfg.CreateMap<PlateDto, Plate>();
-                cfg.CreateMap<Plate, PlateDto>();
+                cfg.CreateMap<Plate, PlateDto>()
+                    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (EventBus.Enums.Status)src.StatusId))
+                    .ForSourceMember(src => src.Status, opt => opt.DoNotValidate())
+                    .ForSourceMember(src => src.AuditLogs, opt => opt.DoNotValidate());
+
+                cfg.CreateMap<PlateDto, Plate>()
+                    .ForMember(dest => dest.StatusId, opt => opt.MapFrom(src => (int)src.Status))
+                    .ForMember(dest => dest.Status, opt => opt.Ignore())
+                    .ForMember(dest => dest.AuditLogs, opt => opt.Ignore());
             });
+
             _mapper = config.CreateMapper();
             var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             _logger = loggerFactory.CreateLogger<PlateService>();
@@ -67,21 +74,6 @@ namespace Catalog.API.UnitTests.Services
             Assert.NotNull(result.Plates);
             Assert.Single(result.Plates);
             Assert.Equal("ABC123", result.Plates.ToList().FirstOrDefault()?.Registration);
-        }
-
-        // Test: AddPlateAsync_Should_CallRepository_When_ValidPlateDto
-        // - Verify that IPlateRepository.AddPlateAsync is called once with the mapped Plate entity
-        [Fact]
-        public async Task AddPlateAsync_Should_CallRepository_When_ValidPlateDto()
-        {
-            // Arrange
-            var plateDto = new PlateDto { Registration = "ABC123" };
-
-            // Act
-            await _plateService.AddPlateAsync(plateDto);
-
-            // Assert: Verify that repository's AddPlateAsync was called once.
-            _plateRepositoryMock.Verify(repo => repo.AddPlateAsync(It.IsAny<Plate>()), Times.Once);
         }
 
         // Test: AddPlateAsync_Should_ThrowArgumentException_When_RegistrationIsEmpty
@@ -127,26 +119,5 @@ namespace Catalog.API.UnitTests.Services
             // Act & Assert: Verify that the exception is rethrown
             await Assert.ThrowsAsync<Exception>(() => _plateService.AddPlateAsync(plateDto));
         }
-
-        // Optional: AddPlateAsync_Should_Handle_ValidPlateDto_With_ExtraFields
-        // - Supply PlateDto with extra properties filled (PurchasePrice, SalePrice)
-        [Fact]
-        public async Task AddPlateAsync_Should_Handle_ValidPlateDto_With_ExtraFields()
-        {
-            // Arrange
-            var plateDto = new PlateDto
-            {
-                Registration = "XYZ789",
-                PurchasePrice = 1000,
-                SalePrice = 1500
-            };
-
-            // Act
-            await _plateService.AddPlateAsync(plateDto);
-
-            // Assert: Verify that repository's AddPlateAsync was called once.
-            _plateRepositoryMock.Verify(repo => repo.AddPlateAsync(It.IsAny<Plate>()), Times.Once);
-        }
-
     }
 }

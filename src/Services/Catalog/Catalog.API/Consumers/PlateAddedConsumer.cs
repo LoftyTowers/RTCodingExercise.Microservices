@@ -22,8 +22,16 @@ namespace Catalog.API.Consumers
             try
             {
                 _logger.LogInformation("Received PlateAddedEvent for plate: {Plate}", context.Message.Plate.Registration);
-                await _plateService.AddPlateAsync(context.Message.Plate);
+                var plateDtos = await _plateService.AddPlateAsync(context.Message.Plate);
                 _logger.LogInformation("Successfully added plate: {Plate}", context.Message.Plate.Registration);
+                
+                var response = new PlateAddedCompletedEvent(plateDtos)
+                {
+                    CorrelationId = context.CorrelationId ?? Guid.NewGuid()
+                };
+
+                _logger.LogInformation("Returning plate data with CorrelationId {CorrelationId}", response.CorrelationId);
+                await context.RespondAsync(response);
             }
             catch (Exception ex)
             {

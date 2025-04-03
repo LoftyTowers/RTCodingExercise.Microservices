@@ -8,16 +8,14 @@ namespace RTCodingExercise.Microservices.Controllers
     {
         #region Fields
 
-        private readonly IPlateQueryService _plateQueryService;
-        private readonly ISalesCommandService _saleCommandService;
+        private readonly ISalesQueryService _saleQueryService;
         private readonly ILogger<PlatesController> _logger;
 
         #endregion
 
-        public SalesController(IPlateQueryService plateQueryService, ISalesCommandService saleCommandService, ILogger<PlatesController> logger)
+        public SalesController(ISalesQueryService saleQueryService, ILogger<PlatesController> logger)
         {
-            _plateQueryService = plateQueryService;
-            _saleCommandService = saleCommandService;
+            _saleQueryService = saleQueryService;
             _logger = logger;
         }
 
@@ -37,22 +35,35 @@ namespace RTCodingExercise.Microservices.Controllers
                 if (!string.IsNullOrWhiteSpace(promoCode))
                 {
                     if (promoCode.Equals("DISCOUNT", StringComparison.OrdinalIgnoreCase))
-                        discounted -= 25;
-                    else if (promoCode.Equals("PERCENTOFF", StringComparison.OrdinalIgnoreCase))
-                        discounted *= 0.85m;
-                }
+                    {
+                        _logger.LogDebug("We Are -£25");
+                        discounted -= 25m;
 
-                if (discounted < plate.SalePrice * 0.9m)
-                {
-                    TempData["ErrorMessage"] = "Discount too large. Cannot sell below 90% of original sale price.";
-                    return RedirectToAction("Index", "Plates");
+                        _logger.LogDebug($"[DISCOUNT LOG] Sales Price: {plate.SalePrice}, Discounted price: {discounted}, Price Difference: {plate.SalePrice * 0.9m}");
+
+                        if (discounted < (plate.SalePrice * 0.9m))
+                        {
+                            TempData["ErrorMessage"] = "Discount too large. Cannot sell below 90% of original sale price.";
+                            return RedirectToAction("Index", "Plates");
+                        }
+                    }
+                    else if (promoCode.Equals("PERCENTOFF", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogDebug("We Are -£15");
+                        discounted *= 0.85m;
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Invalid Discount code. Enter a valid code or continue without.";
+                            return RedirectToAction("Index", "Plates");
+                    }
                 }
 
                 plate.FinalSalePrice = discounted;
                 plate.PromoCodeUsed = promoCode;
                 plate.Status = Status.Sold;
 
-                await _saleCommandService.SellPlate(plate);
+                await _saleQueryService.SellPlate(plate);
                 TempData["SuccessMessage"] = $"Plate sold for {discounted:C}.";
                 return RedirectToAction("Index", "Plates");
             }

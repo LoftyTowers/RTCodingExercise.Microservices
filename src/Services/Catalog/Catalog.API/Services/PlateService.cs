@@ -4,6 +4,7 @@ using Catalog.API.Repositories;
 using RTCodingExercise.Microservices.BuildingBlocks.EventBus.IntegrationEvents.Models;
 using Catalog.Domain;
 using Catalog.Domain.Enums;
+using MassTransit.Futures.Contracts;
 
 namespace Catalog.API.Services
 {
@@ -24,21 +25,7 @@ namespace Catalog.API.Services
         {
             try
             {
-                var plates = await _plateRepository.GetPlatesAsync(field, dir, filter, onlyAvailable);
-
-                if (plates == null || !plates.Any())
-                {
-                    _logger.LogWarning("No plates found in the repository.");
-                }
-
-                var profitStats = await _plateRepository.CalculateProfitStatsAsync();
-
-                return new PlateDataDto()
-                {
-                    Plates = _mapper.Map<List<PlateDto>>(plates),
-                    AverageProfitMargin = profitStats.AverageProfitMargin,
-                    TotalRevenue = profitStats.TotalRevenue
-                };
+                return await GetUpdatedPlatesListAsync(field, dir, filter, onlyAvailable);
             }
             catch (Exception ex)
             {
@@ -47,7 +34,7 @@ namespace Catalog.API.Services
             }
         }
 
-        public async Task AddPlateAsync(PlateDto plateDto)
+        public async Task<PlateDataDto> AddPlateAsync(PlateDto plateDto)
         {
             try
             {
@@ -57,6 +44,7 @@ namespace Catalog.API.Services
                     throw new ArgumentException("Plate registration cannot be null or empty.");
 
                 await _plateRepository.AddPlateAsync(plate);
+                return await GetPlatesAsync(SortField.None, SortDirection.None, null, null);
             }
             catch (Exception ex)
             {
@@ -65,13 +53,15 @@ namespace Catalog.API.Services
             }
         }
 
-        public async Task UpdateStatusAsync(Plate plate)
+        public async Task<PlateDataDto> UpdateStatusAsync(Plate plate)
         {
             try
             {
                 await _plateRepository.UpdatePlateStatusAsync(plate);
                 //await _auditRepository.LogAsync(plate, "Reserved");
                 _logger.LogInformation("Plate {PlateId} reserved successfully.", plate);
+                return await GetPlatesAsync(SortField.None, SortDirection.None, null, null);
+
             }
             catch (Exception ex)
             {
@@ -80,12 +70,13 @@ namespace Catalog.API.Services
             }
         }
 
-        public async Task SellPlateAsync(Plate plate)
+        public async Task<PlateDataDto> SellPlateAsync(Plate plate)
         {
             try
             {
                 _logger.LogInformation("Service: Routing SellPlateAsync for Plate ID {Id}", plate.Id);
                 await _plateRepository.SellPlateAsync(plate);
+                return await GetPlatesAsync(SortField.None, SortDirection.None, null, null);
             }
             catch (Exception ex)
             {
@@ -94,5 +85,25 @@ namespace Catalog.API.Services
             }
         }
 
+        
+
+        private async Task<PlateDataDto> GetUpdatedPlatesListAsync(SortField field, SortDirection dir, string? filter, bool? onlyAvailable)
+        {
+            var plates = await _plateRepository.GetPlatesAsync(field, dir, filter, onlyAvailable);
+
+            if (plates == null || !plates.Any())
+            {
+                _logger.LogWarning("No plates found in the repository.");
+            }
+
+            var profitStats = await _plateRepository.CalculateProfitStatsAsync();
+
+            return new PlateDataDto()
+            {
+                Plates = _mapper.Map<List<PlateDto>>(plates),
+                AverageProfitMargin = profitStats.AverageProfitMargin,
+                TotalRevenue = profitStats.TotalRevenue
+            };
+        }
     }
 }

@@ -29,9 +29,17 @@ namespace Catalog.API.Consumers
             {
                 var plate = _mapper.Map<Plate>(dto);
 
-                await _plateService.SellPlateAsync(plate);
+                var plateDtos = await _plateService.SellPlateAsync(plate);
 
                 _logger.LogInformation("SellPlateEvent processed successfully for ID={Id}", plate.Id);
+                
+                var response = new SellPlateCompletedEvent(plateDtos)
+                {
+                    CorrelationId = context.CorrelationId ?? Guid.NewGuid()
+                };
+
+                _logger.LogInformation("Returning plate data with CorrelationId {CorrelationId}", response.CorrelationId);
+                await context.RespondAsync(response);
             }
             catch (Exception ex)
             {

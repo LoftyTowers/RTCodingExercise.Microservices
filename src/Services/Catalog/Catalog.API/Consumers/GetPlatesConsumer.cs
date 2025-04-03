@@ -27,7 +27,6 @@ namespace Catalog.API.Consumers
                 _logger.LogInformation("Received GetPlatesEvent with CorrelationId {CorrelationId}", context.CorrelationId);
                 var plateDtos = await _plateService.GetPlatesAsync(_mapper.Map<SortField>(context?.Message?.SortField), _mapper.Map<SortDirection>(context?.Message?.SortDirection), context?.Message.Filter, context?.Message?.OnlyAvailable);
 
-
                 var response = new PlatesRetrievedEvent(plateDtos)
                 {
                     CorrelationId = context.CorrelationId ?? Guid.NewGuid()

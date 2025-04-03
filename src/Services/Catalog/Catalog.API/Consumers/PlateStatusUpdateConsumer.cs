@@ -23,8 +23,16 @@ namespace Catalog.API.Consumers
         {
             try
             {
-                await _plateService.UpdateStatusAsync(_mapper.Map<Plate>(context.Message.Plate));
+                var plateDtos = await _plateService.UpdateStatusAsync(_mapper.Map<Plate>(context.Message.Plate));
                 _logger.LogInformation("Processed PlateReservedEvent for Plate ID: {PlateId}", context.Message.Plate.Id);
+                
+                var response = new PlateStatusUpdateCompletedEvent(plateDtos)
+                {
+                    CorrelationId = context.CorrelationId ?? Guid.NewGuid()
+                };
+
+                _logger.LogInformation("Returning plate data with CorrelationId {CorrelationId}", response.CorrelationId);
+                await context.RespondAsync(response);
             }
             catch (Exception ex)
             {

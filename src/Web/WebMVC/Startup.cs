@@ -31,8 +31,7 @@ namespace RTCodingExercise.WebMVC
 
             // Register the PlateQueryService
             services.AddScoped<IPlateQueryService, PlateQueryService>();
-            services.AddScoped<IPlateCommandService, PlateCommandService>();
-            services.AddScoped<ISalesCommandService, SalesCommandService>();
+            services.AddScoped<ISalesQueryService, SalesQueryService>();
 
 
             services.AddControllers();
@@ -43,6 +42,9 @@ namespace RTCodingExercise.WebMVC
             {
                 // Register the request client for GetPlatesEvent
                 x.AddRequestClient<GetPlatesEvent>();
+                x.AddRequestClient<PlateAddedEvent>();
+                x.AddRequestClient<SellPlateEvent>();
+                x.AddRequestClient<PlateStatusUpdateEvent>();
                 
                 //ADD CONSUMERS HERE
                 x.UsingRabbitMq((context, cfg) =>

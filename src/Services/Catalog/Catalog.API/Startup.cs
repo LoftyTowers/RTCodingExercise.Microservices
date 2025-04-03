@@ -72,6 +72,8 @@ namespace Catalog.API
                 //x.AddConsumer<ConsumerClass>();
                 x.AddConsumer<GetPlatesConsumer>();
                 x.AddConsumer<PlateAddedConsumer>();
+                x.AddConsumer<PlateStatusUpdateConsumer>();
+                x.AddConsumer<SellPlateConsumer>();
 
                 //ADD CONSUMERS HERE
                 x.UsingRabbitMq((context, cfg) =>
